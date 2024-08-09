@@ -2,16 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using HexasphereGrid;
+using Unity.VisualScripting;
 
 public class WorldGenerator : MonoBehaviour
 {
+    public static WorldGenerator instance;
+
     Hexasphere hexa;
+    [SerializeField] private Material waterMaterial;
     [SerializeField] private float waterLevel;
+    [SerializeField] private float heightScale;
+    public List<int> waterTiles;
 
     // Start is called before the first frame update
     void Start()
     {
         hexa = Hexasphere.GetInstance("Hexasphere");
+        instance = this;
 
         float noiseOffsetX = Random.Range(0, 1000);
         float noiseOffsetY = Random.Range(0, 1000);
@@ -24,12 +31,13 @@ public class WorldGenerator : MonoBehaviour
             float sample = noise.GetNoise(LatLon.x + noiseOffsetX, LatLon.y + noiseOffsetY);
             if  (sample <= waterLevel)
             {
-                hexa.SetTileColor(tile.index, new Color(0, 85, 245));
+                hexa.SetTileMaterial(tile.index, waterMaterial, false);
                 hexa.SetTileCanCross(tile.index, false);
+                waterTiles.Add(tile.index);
             }
             else
             {
-                hexa.SetTileColor(tile.index, new Color(sample, sample, sample));
+                hexa.SetTileExtrudeAmount(tile.index, (sample - waterLevel)*heightScale);
                 hexa.SetTileCanCross(tile.index, true);
             }
         }

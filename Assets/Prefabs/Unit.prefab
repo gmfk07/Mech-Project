@@ -48,6 +48,7 @@ MonoBehaviour:
   tileIndex: 0
   moveDuration: 0.5
   path: 
+  moveRange: 3
 --- !u!1 &5264653350350003754
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +171,7 @@ MonoBehaviour:
   tileIndex: 0
   moveDuration: 0.5
   path: 
+  moveRange: 0
 --- !u!1 &5979287343868427373
 GameObject:
   m_ObjectHideFlags: 0

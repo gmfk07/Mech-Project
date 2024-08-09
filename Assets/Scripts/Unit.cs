@@ -3,26 +3,18 @@ using System.Collections.Generic;
 using HexasphereGrid;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Unit : Object
 {
-    Hexasphere hexa;
-    [HideInInspector] public int tileIndex;
     [SerializeField] float moveDuration;
-    public List<int> path;
+    [HideInInspector] public List<int> path;
     float startTime;
+    public int moveRange;
 
     // Start is called before the first frame update
-    void Start()
+    new void Start()
     {
-        hexa = Hexasphere.GetInstance("Hexasphere");
-        AlignToSurface();
-        transform.Translate(0, 0, 0);
+        base.Start();
         path = new List<int>();
-    }
-
-    void AlignToSurface() {
-        transform.LookAt(hexa.transform.position);
-        transform.Rotate(-90, 0, 0, Space.Self);
     }
 
     public bool IsMoving()
