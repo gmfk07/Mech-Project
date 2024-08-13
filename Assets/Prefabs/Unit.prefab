@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1441896730637163303}
-  - component: {fileID: 4031862052497885522}
+  - component: {fileID: 6900499311638302491}
   m_Layer: 2
   m_Name: Unit
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 6223720656039318189}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4031862052497885522
+--- !u!114 &6900499311638302491
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,13 +42,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 862812538699581198}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c89aa19ab704c44acce6b41758d49e, type: 3}
+  m_Script: {fileID: 11500000, guid: 165b95385be4bb1439ff90bda56b001b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tileIndex: 0
   moveDuration: 0.5
   path: 
   moveRange: 3
+  remainingMoves: 0
+  active: 1
+  minePrefab: {fileID: 2641466471201932237, guid: 3cda65ea0609ca1448f2f3164acf3667, type: 3}
 --- !u!1 &5264653350350003754
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +175,8 @@ MonoBehaviour:
   moveDuration: 0.5
   path: 
   moveRange: 0
+  remainingMoves: 0
+  active: 1
 --- !u!1 &5979287343868427373
 GameObject:
   m_ObjectHideFlags: 0
