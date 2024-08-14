@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class City : Object
@@ -8,7 +9,9 @@ public class City : Object
     [SerializeField] private int borderDistance;
     [SerializeField] private Material borderMaterialLand;
     [SerializeField] private Material borderMaterialWater;
-    [SerializeField] private List<int> tilesWithinBorders = new List<int>();
+    [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
+    [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
+    private int population = 1;
 
     // Start is called before the first frame update
     new void Start()

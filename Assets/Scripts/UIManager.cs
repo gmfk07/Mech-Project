@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     void Start() {
         hexa = Hexasphere.GetInstance("Hexasphere");
         instance = this;
+        UpdateMainButton();
     }
 
     public void UpdateMainButton() {

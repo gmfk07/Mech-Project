@@ -5,7 +5,7 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     public static TurnManager instance;
-    public int currentPlayer = 0;
+    [HideInInspector] public int currentPlayer = 0;
 
     void Start()
     {

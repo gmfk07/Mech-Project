@@ -18,7 +18,7 @@ public class ObjectManager : MonoBehaviour
     Dictionary<int, City> tileCityDict = new Dictionary<int, City>();
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
 
-    public Unit selectedUnit = null;
+    [HideInInspector] public Unit selectedUnit = null;
     PaintMode paintMode = PaintMode.None;
 
     // Start is called before the first frame update
@@ -29,8 +29,6 @@ public class ObjectManager : MonoBehaviour
         hexa.OnTileClick += TileClick;
         hexa.OnTileRightClick += TileRightClick;
         hexa.OnTileMouseOver += TileMouseOver;
-
-        UIManager.instance.UpdateMainButton();
     }
 
     void OnGUI()
@@ -139,6 +137,8 @@ public class ObjectManager : MonoBehaviour
 
                 // Position capsule on top of tile
                 city.transform.position = hexa.GetTileCenter(tileIndex);
+
+                NationManager.instance.nations[TurnManager.instance.currentPlayer].cities.Add(city);
 
                 hexa.FlyTo(tileIndex, 0.5f);
             }
