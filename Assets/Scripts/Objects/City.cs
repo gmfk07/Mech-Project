@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,18 +14,37 @@ public class City : Object
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
     private int population = 1;
+    private WorldPositionButton cityButton;
+    [HideInInspector] public String cityName;
 
     // Start is called before the first frame update
     new void Start()
     {
         base.Start();
         PaintBorders();
+        StartCoroutine(CreateCityButton());
+    }
+
+    IEnumerator CreateCityButton()
+    {
+        while (HUDCanvas.instance == null)
+        {
+            yield return null;
+        }
+        cityButton = HUDCanvas.instance.CreateCityButton(this);
+    }
+
+    public void ChangeName(String newName)
+    {
+        cityName = newName;
+        GetComponentInChildren<TextMeshPro>().text = newName;
     }
 
     void PaintBorders()
     {
         foreach (Tile tile in hexa.tiles)
         {
+            //Make a path to the city and see if it's short enough
             List<int> path = hexa.FindPath(tileIndex, tile.index, 0, -1, true);
             if (path != null && path.Count <= borderDistance)
             {
@@ -39,5 +60,12 @@ public class City : Object
             }
             hexa.SetTileMaterial(tileIndex, borderMaterialLand, false);
         }
+    }
+
+    public void HandleClicked()
+    {
+        hexa.FlyTo(tileIndex, 0.5f);
+        HUDCanvas.instance.SetCityPanelVisible(true);
+        ObjectManager.instance.selectedUnit = null;
     }
 }

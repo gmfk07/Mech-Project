@@ -2557,6 +2557,7 @@ namespace HexasphereGrid {
                         return true;
                     }
                 }
+                Debug.DrawRay(ray.origin, ray.direction);
             }
 
             position = Misc.Vector3zero;

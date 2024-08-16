@@ -127,7 +127,7 @@ public class ObjectManager : MonoBehaviour
         {
             if (!tileCityDict.ContainsKey(tileIndex) && hexa.GetTileCanCross(tileIndex))
             {
-                // Create the tile sprite
+                // Create the tile prefab
                 City city = Instantiate(cityPrefab).GetComponent<City>();
                 tileCityDict.Add(tileIndex, city);
                 city.tileIndex = tileIndex;
@@ -138,7 +138,10 @@ public class ObjectManager : MonoBehaviour
                 // Position capsule on top of tile
                 city.transform.position = hexa.GetTileCenter(tileIndex);
 
-                NationManager.instance.nations[TurnManager.instance.currentPlayer].cities.Add(city);
+                List<City> currentCities = NationManager.instance.nations[TurnManager.instance.currentPlayer].cities;
+
+                currentCities.Add(city);
+                city.cityName = NationManager.instance.nationCityNameLists[TurnManager.instance.currentPlayer][currentCities.Count - 1];
 
                 hexa.FlyTo(tileIndex, 0.5f);
             }
