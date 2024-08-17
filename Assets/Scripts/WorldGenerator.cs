@@ -4,6 +4,7 @@ using UnityEngine;
 using HexasphereGrid;
 using Unity.VisualScripting;
 using System.Linq;
+using System.Globalization;
 
 public class WorldGenerator : MonoBehaviour
 {
@@ -11,15 +12,20 @@ public class WorldGenerator : MonoBehaviour
 
     Hexasphere hexa;
     [SerializeField] private Material waterMaterial;
+    [SerializeField] private Material iceMaterial;
     [SerializeField] private float waterLevel;
     [SerializeField] private float forestCutoff;
     [SerializeField] private int oreCount;
     [SerializeField] private float heightScale;
     [SerializeField] private GameObject forestPrefab;
     [SerializeField] private GameObject orePrefab;
+    [SerializeField] private int poleRadius;
     [HideInInspector] public List<int> waterTiles;
+    [HideInInspector] public List<int> iceTiles;
     [HideInInspector] public List<int> forestTiles;
-    [HideInInspector] public List<int> oreTiles;  
+    [HideInInspector] public List<int> oreTiles;
+    [HideInInspector] public int northPoleTile;
+    [HideInInspector] public int southPoleTile;
 
     // Start is called before the first frame update
     void Start()
@@ -51,13 +57,45 @@ public class WorldGenerator : MonoBehaviour
             }
         }
 
+        //Generate poles
+        northPoleTile = hexa.tiles[0].index;
+        southPoleTile = hexa.GetTileAtPolarOpposite(northPoleTile);
+        hexa.SetTileMaterial(northPoleTile, iceMaterial);
+        hexa.SetTileMaterial(southPoleTile, iceMaterial);
+        foreach (int tileIndex in hexa.GetTilesWithinSteps(northPoleTile, poleRadius+1, false))
+        {
+            hexa.SetTileMaterial(tileIndex, waterMaterial);
+            hexa.SetTileCanCross(tileIndex, false);
+            hexa.SetTileExtrudeAmount(tileIndex, 0);
+            waterTiles.Add(tileIndex);
+        }
+        foreach (int tileIndex in hexa.GetTilesWithinSteps(northPoleTile, poleRadius, false))
+        {
+            hexa.SetTileMaterial(tileIndex, iceMaterial);
+            waterTiles.Remove(tileIndex);
+            iceTiles.Add(tileIndex);
+        }
+        foreach (int tileIndex in hexa.GetTilesWithinSteps(southPoleTile, poleRadius+1, false))
+        {
+            hexa.SetTileMaterial(tileIndex, waterMaterial);
+            hexa.SetTileCanCross(tileIndex, false);
+            hexa.SetTileExtrudeAmount(tileIndex, 0);
+            waterTiles.Add(tileIndex);
+        }
+        foreach (int tileIndex in hexa.GetTilesWithinSteps(southPoleTile, poleRadius, false))
+        {
+            hexa.SetTileMaterial(tileIndex, iceMaterial);
+            waterTiles.Remove(tileIndex);
+            iceTiles.Add(tileIndex);
+        }
+
         List<Tile> shuffledTiles = hexa.tiles.ToList();
         IListExtensions.Shuffle<Tile>(shuffledTiles);
         //Generate ores
         int currentOres = 0;
         foreach (Tile tile in shuffledTiles)
         {
-            if (currentOres <= oreCount && !waterTiles.Contains(tile.index))
+            if (currentOres <= oreCount && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
             {
                 // Create the tile prefab
                 GameObject oreObject = Instantiate(orePrefab);
@@ -83,7 +121,7 @@ public class WorldGenerator : MonoBehaviour
         {
             Vector2 LatLon = hexa.GetTileLatLon(tile.index);
             float sample = noise.GetNoise(LatLon.x + noiseOffsetX, LatLon.y + noiseOffsetY);
-            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !oreTiles.Contains(tile.index))
+            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index) && !oreTiles.Contains(tile.index))
             {
                 // Create the tile prefab
                 GameObject forestObject = Instantiate(forestPrefab);

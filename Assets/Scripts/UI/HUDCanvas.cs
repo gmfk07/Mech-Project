@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ public class HUDCanvas : MonoBehaviour
     private Hexasphere hexa;
     [SerializeField] GameObject cityButtonPrefab;
     [SerializeField] Image cityPanel;
+    [SerializeField] TextMeshProUGUI cityNameText;
 
     void Start()
     {
@@ -19,6 +21,7 @@ public class HUDCanvas : MonoBehaviour
         hexa.OnDragStart += (hexa) => SetCityPanelVisible(false);
         hexa.OnTileClick += (hexa, tileIndex) => SetCityPanelVisible(false);
         hexa.OnTileRightClick += (hexa, tileIndex) => SetCityPanelVisible(false);
+        SetCityPanelVisible(false);
     }
 
     void Update()
@@ -40,5 +43,11 @@ public class HUDCanvas : MonoBehaviour
     public void SetCityPanelVisible(bool visibility)
     {
         cityPanel.enabled = visibility;
+        cityNameText.enabled = visibility;
+    }
+
+    public void SetCityNameText(string text)
+    {
+        cityNameText.text = text;
     }
 }

@@ -32,12 +32,16 @@ public class City : Object
             yield return null;
         }
         cityButton = HUDCanvas.instance.CreateCityButton(this);
+        ChangeName(cityName);
     }
 
     public void ChangeName(String newName)
     {
         cityName = newName;
-        GetComponentInChildren<TextMeshPro>().text = newName;
+        if (cityButton != null)
+        {
+            cityButton.GetComponentInChildren<TextMeshProUGUI>().text = newName;
+        }
     }
 
     void PaintBorders()
@@ -65,6 +69,7 @@ public class City : Object
     public void HandleClicked()
     {
         hexa.FlyTo(tileIndex, 0.5f);
+        HUDCanvas.instance.SetCityNameText(cityName);
         HUDCanvas.instance.SetCityPanelVisible(true);
         ObjectManager.instance.selectedUnit = null;
     }

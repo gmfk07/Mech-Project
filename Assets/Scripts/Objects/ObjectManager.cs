@@ -33,15 +33,15 @@ public class ObjectManager : MonoBehaviour
 
     void OnGUI()
     {
-        if (GUI.Button(new Rect(10, 10, 220, 30), "Paint None"))
+        if (GUI.Button(new Rect(710, 10, 220, 30), "Paint None"))
         {
             paintMode = PaintMode.None;
         }
-        if (GUI.Button(new Rect(10, 50, 220, 30), "Paint Unit"))
+        if (GUI.Button(new Rect(710, 50, 220, 30), "Paint Unit"))
         {
             paintMode = PaintMode.Unit;
         }
-        if (GUI.Button(new Rect(10, 90, 220, 30), "Paint City"))
+        if (GUI.Button(new Rect(710, 90, 220, 30), "Paint City"))
         {
             paintMode = PaintMode.City;
         }
@@ -141,7 +141,7 @@ public class ObjectManager : MonoBehaviour
                 List<City> currentCities = NationManager.instance.nations[TurnManager.instance.currentPlayer].cities;
 
                 currentCities.Add(city);
-                city.cityName = NationManager.instance.nationCityNameLists[TurnManager.instance.currentPlayer][currentCities.Count - 1];
+                city.ChangeName(NationManager.instance.nationCityNameLists[TurnManager.instance.currentPlayer][currentCities.Count - 1]);
 
                 hexa.FlyTo(tileIndex, 0.5f);
             }
