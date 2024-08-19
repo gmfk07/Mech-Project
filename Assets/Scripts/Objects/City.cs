@@ -16,6 +16,7 @@ public class City : Object
     private int population = 1;
     private WorldPositionButton cityButton;
     [HideInInspector] public String cityName;
+    private Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
 
     // Start is called before the first frame update
     new void Start()
@@ -69,8 +70,7 @@ public class City : Object
     public void HandleClicked()
     {
         hexa.FlyTo(tileIndex, 0.5f);
-        HUDCanvas.instance.SetCityNameText(cityName);
+        HUDCanvas.instance.SetSelectedCity(this);
         HUDCanvas.instance.SetCityPanelVisible(true);
-        ObjectManager.instance.selectedUnit = null;
     }
 }

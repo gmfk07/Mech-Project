@@ -47,6 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileIndex: 0
   owner: {fileID: 0}
+  resourceProductionDictKeys:
+  - {fileID: 11400000, guid: 238fd8b3456b0cb4295bfb4134050492, type: 2}
+  resourceProductionDictValues: 01000000
 --- !u!1001 &2581464105233605006
 PrefabInstance:
   m_ObjectHideFlags: 0
