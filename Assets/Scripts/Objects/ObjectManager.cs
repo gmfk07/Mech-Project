@@ -115,7 +115,7 @@ public class ObjectManager : MonoBehaviour
                 }
                 selectedUnit = unit;
                 unit.active = true;
-                UIManager.instance.UpdateMainButton();
+                UICanvas.instance.UpdateMainButton();
             }
             else if (tileUnitDict.ContainsKey(tileIndex))
             {
@@ -185,7 +185,7 @@ public class ObjectManager : MonoBehaviour
                 if (selectedUnit.remainingMoves == 0)
                 {
                     selectedUnit.active = false;
-                    UIManager.instance.UpdateMainButton();
+                    UICanvas.instance.UpdateMainButton();
                 }
 
                 hexa.FlyTo(tileIndex, 0.5f);

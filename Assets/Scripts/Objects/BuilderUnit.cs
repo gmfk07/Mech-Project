@@ -13,7 +13,7 @@ public class BuilderUnit : Unit
         {
             if (WorldGenerator.instance.oreTiles.Contains(tileIndex) && FindOwningCity(tileIndex) != null)
             {
-                BuildMine();
+                BuildSubObject(minePrefab);
             }
         }
     }
@@ -30,15 +30,16 @@ public class BuilderUnit : Unit
         return null;
     }
 
-    void BuildMine()
+    void BuildSubObject(GameObject prefab)
     {
-        CitySubObject mine = Instantiate(minePrefab).GetComponent<CitySubObject>();
-        mine.tileIndex = tileIndex;
+        CitySubObject citySubObject = Instantiate(prefab).GetComponent<CitySubObject>();
+        citySubObject.tileIndex = tileIndex;
 
-        mine.transform.SetParent(hexa.transform);
-        mine.transform.position = hexa.GetTileCenter(tileIndex);
+        citySubObject.transform.SetParent(hexa.transform);
+        citySubObject.transform.position = hexa.GetTileCenter(tileIndex);
 
         City owningCity = FindOwningCity(tileIndex);
-        owningCity.citySubObjects.Add(mine);
+        owningCity.citySubObjects.Add(citySubObject);
+        citySubObject.owner = owningCity;
     }
 }

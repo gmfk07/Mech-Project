@@ -16,7 +16,7 @@ public class City : Object
     private int population = 1;
     private WorldPositionButton cityButton;
     [HideInInspector] public String cityName;
-    private Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
+    [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
 
     // Start is called before the first frame update
     new void Start()
@@ -28,11 +28,11 @@ public class City : Object
 
     IEnumerator CreateCityButton()
     {
-        while (HUDCanvas.instance == null)
+        while (UICanvas.instance == null)
         {
             yield return null;
         }
-        cityButton = HUDCanvas.instance.CreateCityButton(this);
+        cityButton = UICanvas.instance.CreateCityButton(this);
         ChangeName(cityName);
     }
 
@@ -70,7 +70,7 @@ public class City : Object
     public void HandleClicked()
     {
         hexa.FlyTo(tileIndex, 0.5f);
-        HUDCanvas.instance.SetSelectedCity(this);
-        HUDCanvas.instance.SetCityPanelVisible(true);
+        UICanvas.instance.SetSelectedCity(this);
+        UICanvas.instance.SetCityPanelVisible(true);
     }
 }

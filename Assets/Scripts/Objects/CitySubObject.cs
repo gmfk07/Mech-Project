@@ -28,7 +28,7 @@ public class CitySubObject : Object
 
     void CreateCitySubObjectButton()
     {
-        citySubObjectButton = HUDCanvas.instance.CreateCitySubObjectButton(this);
+        citySubObjectButton = UICanvas.instance.CreateCitySubObjectButton(this);
         SetCitySubObjectButtonActive(false);
     }
 
@@ -41,6 +41,32 @@ public class CitySubObject : Object
     {
         worked = !worked;
         UpdateCitySubObjectButtonColor();
+        if (worked)
+        {
+            foreach (Resource resource in resourceProductionDict.Keys)
+            {
+                if (owner.resourceProductionDict.ContainsKey(resource))
+                {
+                    owner.resourceProductionDict[resource] += resourceProductionDict[resource];
+                }
+                else
+                {
+                    owner.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
+                }
+            }
+        }
+        else
+        {
+            foreach (Resource resource in resourceProductionDict.Keys)
+            {
+                owner.resourceProductionDict[resource] -= resourceProductionDict[resource];
+                if (owner.resourceProductionDict[resource] == 0)
+                {
+                    owner.resourceProductionDict.Remove(resource);
+                }
+            }
+        }
+        UICanvas.instance.UpdateResourceList();
     }
 
     public void UpdateCitySubObjectButtonColor()
