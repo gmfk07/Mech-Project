@@ -12,8 +12,10 @@ public class City : Object
     [SerializeField] private Material borderMaterialLand;
     [SerializeField] private Material borderMaterialWater;
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
+    //Contains all subobjects in borders, not just those assigned to the city. For that, check the subObjects' owner
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
-    private int population = 1;
+    private int availablePopulation = 1;
+    private int totalPopulation = 1;
     private WorldPositionButton cityButton;
     [HideInInspector] public String cityName;
     [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
@@ -24,6 +26,8 @@ public class City : Object
         base.Start();
         PaintBorders();
         StartCoroutine(CreateCityButton());
+        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
+        citySubObjects = ObjectManager.instance.GetSubObjectsInCityBorders(this);
     }
 
     IEnumerator CreateCityButton()
@@ -69,8 +73,21 @@ public class City : Object
 
     public void HandleClicked()
     {
+        UICanvas.instance.SetCityPanelVisible(false);
         hexa.FlyTo(tileIndex, 0.5f);
         UICanvas.instance.SetSelectedCity(this);
         UICanvas.instance.SetCityPanelVisible(true);
+        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
+    }
+
+    public bool HasAvailablePopulation(int amount=1)
+    {
+        return availablePopulation >= amount;
+    }
+
+    public void ChangeAvailablePopulation(int delta)
+    {
+        availablePopulation += delta;
+        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
     }
 }

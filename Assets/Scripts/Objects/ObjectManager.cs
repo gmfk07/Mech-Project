@@ -16,6 +16,7 @@ public class ObjectManager : MonoBehaviour
 
     Dictionary<int, Unit> tileUnitDict = new Dictionary<int, Unit>();
     Dictionary<int, City> tileCityDict = new Dictionary<int, City>();
+    public Dictionary<int, CitySubObject> tileCitySubObjectDict = new Dictionary<int, CitySubObject>();
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
 
     [HideInInspector] public Unit selectedUnit = null;
@@ -33,15 +34,15 @@ public class ObjectManager : MonoBehaviour
 
     void OnGUI()
     {
-        if (GUI.Button(new Rect(710, 10, 220, 30), "Paint None"))
+        if (GUI.Button(new Rect(850, 10, 220, 30), "Paint None"))
         {
             paintMode = PaintMode.None;
         }
-        if (GUI.Button(new Rect(710, 50, 220, 30), "Paint Unit"))
+        if (GUI.Button(new Rect(850, 50, 220, 30), "Paint Unit"))
         {
             paintMode = PaintMode.Unit;
         }
-        if (GUI.Button(new Rect(710, 90, 220, 30), "Paint City"))
+        if (GUI.Button(new Rect(850, 90, 220, 30), "Paint City"))
         {
             paintMode = PaintMode.City;
         }
@@ -55,9 +56,17 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-    public void GetNextActiveUnit()
+    public List<CitySubObject> GetSubObjectsInCityBorders(City city)
     {
-
+        List<CitySubObject> citySubObjects = new List<CitySubObject>();
+        foreach (int tile in city.tilesWithinBorders)
+        {
+            if (tileCitySubObjectDict.ContainsKey(tile))
+            {
+                citySubObjects.Add(tileCitySubObjectDict[tile]);
+            }
+        }
+        return citySubObjects;
     }
 
     void TileMouseOver(Hexasphere hexa, int tileIndex)

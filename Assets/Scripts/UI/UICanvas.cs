@@ -16,6 +16,7 @@ public class UICanvas : MonoBehaviour
     private Hexasphere hexa;
     [SerializeField] GameObject cityButtonPrefab;
     [SerializeField] GameObject citySubObjectButtonPrefab;
+    [SerializeField] GameObject citySubObjectOccupiedButtonPrefab;
     [SerializeField] Image cityPanel;
     [SerializeField] TextMeshProUGUI cityNameText;
     [SerializeField] TextMeshProUGUI cityPopulationText;
@@ -42,7 +43,7 @@ public class UICanvas : MonoBehaviour
             SetCityPanelVisible(false);
         }
     }
-
+ 
     //Update the main button once ObjectManager and TurnManager are initialized.
     IEnumerator UpdateMainButtonEnumerator() {
         while (ObjectManager.instance == null || TurnManager.instance == null)
@@ -121,8 +122,16 @@ public class UICanvas : MonoBehaviour
     {
         GameObject citySubObjectButton = Instantiate(citySubObjectButtonPrefab, transform);
         citySubObjectButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
-        citySubObjectButton.GetComponentInChildren<Button>().onClick.AddListener(citySubObject.HandleClicked);
+        citySubObjectButton.GetComponentInChildren<Button>().onClick.AddListener(citySubObject.HandleSubObjectButtonClicked);
         return citySubObjectButton.GetComponent<WorldPositionButton>(); 
+    }
+
+    public WorldPositionButton CreateCitySubObjectOccupiedButton(CitySubObject citySubObject)
+    {
+        GameObject citySubObjectOccupiedButton = Instantiate(citySubObjectOccupiedButtonPrefab, transform);
+        citySubObjectOccupiedButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
+        citySubObjectOccupiedButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{citySubObject.HandleSubObjectOccupiedButtonClicked(selectedCity);});
+        return citySubObjectOccupiedButton.GetComponent<WorldPositionButton>(); 
     }
 
     public void SetSelectedCity(City selectedCity)
@@ -136,6 +145,7 @@ public class UICanvas : MonoBehaviour
         cityPanel.enabled = visibility;
         cityNameText.enabled = visibility;
         cityPopulationText.enabled = visibility;
+        uiResourceList.enabled = visibility;
         
         if (visibility)
         {
@@ -143,12 +153,25 @@ public class UICanvas : MonoBehaviour
             uiResourceList.enabled = true;
             UpdateResourceList();
         }
+        else
+        {
+            uiResourceList.ClearResourceDisplay();
+        }
 
         if (selectedCity != null)
         {
             foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
             {
-                citySubObject.SetCitySubObjectButtonActive(visibility);
+                if (citySubObject.owner == selectedCity)
+                {
+                    citySubObject.SetCitySubObjectButtonActive(visibility);
+                    citySubObject.SetCitySubObjectOccupiedButtonActive(false);
+                }
+                else
+                {
+                    citySubObject.SetCitySubObjectButtonActive(false);
+                    citySubObject.SetCitySubObjectOccupiedButtonActive(visibility);
+                }
             }
         }
     }
@@ -168,8 +191,8 @@ public class UICanvas : MonoBehaviour
         uiResourceList.UpdateResourceDisplay();
     }
 
-    public void SetCityPopulation(int availableCitizens, int totalCitizens)
+    public void SetCityPopulationText(int availablePopulation, int totalPopulation)
     {
-        cityPopulationText.text = "Pop: " + availableCitizens.ToString() + "/" + totalCitizens.ToString();
+        cityPopulationText.text = "Pop: " + availablePopulation.ToString() + "/" + totalPopulation.ToString();
     }
 }

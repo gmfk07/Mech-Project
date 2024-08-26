@@ -9,6 +9,7 @@ public class CitySubObject : Object
 {
     [HideInInspector] public City owner;
     private WorldPositionButton citySubObjectButton;
+    private WorldPositionButton citySubObjectOccupiedButton;
     public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
     //Workaround for Unity not having dictionaries in inspector
     [SerializeField] private List<Resource> resourceProductionDictKeys;
@@ -22,14 +23,16 @@ public class CitySubObject : Object
         {
             resourceProductionDict.Add(resourceProductionDictKeys[i], resourceProductionDictValues[i]);
         }
-        CreateCitySubObjectButton();
+        CreateCitySubObjectButtons();
         UpdateCitySubObjectButtonColor();
     }
 
-    void CreateCitySubObjectButton()
+    void CreateCitySubObjectButtons()
     {
         citySubObjectButton = UICanvas.instance.CreateCitySubObjectButton(this);
         SetCitySubObjectButtonActive(false);
+        citySubObjectOccupiedButton = UICanvas.instance.CreateCitySubObjectOccupiedButton(this);
+        SetCitySubObjectOccupiedButtonActive(false);
     }
 
     public void SetCitySubObjectButtonActive(bool enabled)
@@ -37,36 +40,68 @@ public class CitySubObject : Object
         citySubObjectButton.gameObject.SetActive(enabled);
     }
 
-    public void HandleClicked()
+    public void SetCitySubObjectOccupiedButtonActive(bool enabled)
     {
-        worked = !worked;
+        citySubObjectOccupiedButton.gameObject.SetActive(enabled);
+    }
+
+    public void HandleSubObjectButtonClicked()
+    {
+        if (!worked && owner.HasAvailablePopulation(1))
+        {
+            StartBeingWorked();
+        }
+        else if (worked)
+        {
+            StopBeingWorked();
+        }
         UpdateCitySubObjectButtonColor();
+        UICanvas.instance.UpdateResourceList();
+    }
+
+    //Stops being worked, giving a population back to owner city and removing production.
+    private void StopBeingWorked()
+    {
+        worked = false;
+        owner.ChangeAvailablePopulation(1);
+        foreach (Resource resource in resourceProductionDict.Keys)
+        {
+            owner.resourceProductionDict[resource] -= resourceProductionDict[resource];
+            if (owner.resourceProductionDict[resource] == 0)
+            {
+                owner.resourceProductionDict.Remove(resource);
+            }
+        }
+    }
+
+    //Takes a population from owner City and becomes worked, adding production to owner City.
+    private void StartBeingWorked()
+    {
+        worked = true;
+        owner.ChangeAvailablePopulation(-1);
+        foreach (Resource resource in resourceProductionDict.Keys)
+        {
+            if (owner.resourceProductionDict.ContainsKey(resource))
+            {
+                owner.resourceProductionDict[resource] += resourceProductionDict[resource];
+            }
+            else
+            {
+                owner.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
+            }
+        }
+    }
+
+    public void HandleSubObjectOccupiedButtonClicked(City selectedCity)
+    {
+        //Add a pop back to owning city if worked
         if (worked)
         {
-            foreach (Resource resource in resourceProductionDict.Keys)
-            {
-                if (owner.resourceProductionDict.ContainsKey(resource))
-                {
-                    owner.resourceProductionDict[resource] += resourceProductionDict[resource];
-                }
-                else
-                {
-                    owner.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
-                }
-            }
+            StopBeingWorked();
         }
-        else
-        {
-            foreach (Resource resource in resourceProductionDict.Keys)
-            {
-                owner.resourceProductionDict[resource] -= resourceProductionDict[resource];
-                if (owner.resourceProductionDict[resource] == 0)
-                {
-                    owner.resourceProductionDict.Remove(resource);
-                }
-            }
-        }
-        UICanvas.instance.UpdateResourceList();
+        owner = selectedCity;
+        SetCitySubObjectButtonActive(true);
+        SetCitySubObjectOccupiedButtonActive(false);
     }
 
     public void UpdateCitySubObjectButtonColor()

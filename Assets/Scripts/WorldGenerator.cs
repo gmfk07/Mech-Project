@@ -15,15 +15,18 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] private Material iceMaterial;
     [SerializeField] private float waterLevel;
     [SerializeField] private float forestCutoff;
-    [SerializeField] private int oreCount;
+    [SerializeField] private int metalOreCount;
+    [SerializeField] private int rareEarthOreCount;
     [SerializeField] private float heightScale;
     [SerializeField] private GameObject forestPrefab;
-    [SerializeField] private GameObject orePrefab;
+    [SerializeField] private GameObject metalOrePrefab;
+    [SerializeField] private GameObject rareEarthOrePrefab;
     [SerializeField] private int poleRadius;
     [HideInInspector] public List<int> waterTiles;
     [HideInInspector] public List<int> iceTiles;
     [HideInInspector] public List<int> forestTiles;
-    [HideInInspector] public List<int> oreTiles;
+    [HideInInspector] public List<int> metalOreTiles;
+    [HideInInspector] public List<int> rareEarthOreTiles;
     [HideInInspector] public int northPoleTile;
     [HideInInspector] public int southPoleTile;
 
@@ -92,14 +95,14 @@ public class WorldGenerator : MonoBehaviour
         List<Tile> shuffledTiles = hexa.tiles.ToList();
         IListExtensions.Shuffle<Tile>(shuffledTiles);
         //Generate ores
-        int currentOres = 0;
+        int currentMetalOres = 0;
         foreach (Tile tile in shuffledTiles)
         {
-            if (currentOres <= oreCount && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
+            if (currentMetalOres <= metalOreCount && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
             {
                 // Create the tile prefab
-                GameObject oreObject = Instantiate(orePrefab);
-                oreTiles.Add(tile.index);
+                GameObject oreObject = Instantiate(metalOrePrefab);
+                metalOreTiles.Add(tile.index);
 
                 // Parent it to hexasphere, so it rotates along it
                 oreObject.transform.SetParent(hexa.transform);
@@ -110,7 +113,28 @@ public class WorldGenerator : MonoBehaviour
                 oreObject.transform.LookAt(hexa.transform.position);
                 oreObject.transform.Rotate(-90, 0, 0, Space.Self);
 
-                currentOres++;
+                currentMetalOres++;
+            }
+        }
+        int currentRareEarthOres = 0;
+        foreach (Tile tile in shuffledTiles)
+        {
+            if (currentRareEarthOres <= rareEarthOreCount && !metalOreTiles.Contains(tile.index) && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
+            {
+                // Create the tile prefab
+                GameObject oreObject = Instantiate(rareEarthOrePrefab);
+                rareEarthOreTiles.Add(tile.index);
+
+                // Parent it to hexasphere, so it rotates along it
+                oreObject.transform.SetParent(hexa.transform);
+
+                // Position forest on top of tile
+                oreObject.transform.position = hexa.GetTileCenter(tile.index);
+
+                oreObject.transform.LookAt(hexa.transform.position);
+                oreObject.transform.Rotate(-90, 0, 0, Space.Self);
+
+                currentRareEarthOres++;
             }
         }
 
@@ -121,7 +145,7 @@ public class WorldGenerator : MonoBehaviour
         {
             Vector2 LatLon = hexa.GetTileLatLon(tile.index);
             float sample = noise.GetNoise(LatLon.x + noiseOffsetX, LatLon.y + noiseOffsetY);
-            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index) && !oreTiles.Contains(tile.index))
+            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index) && !metalOreTiles.Contains(tile.index) && !rareEarthOreTiles.Contains(tile.index))
             {
                 // Create the tile prefab
                 GameObject forestObject = Instantiate(forestPrefab);

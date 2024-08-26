@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 79cc81249e31dd843a03c4f36c894dd3, type: 3}
-  m_Name: Ore
+  m_Name: RareEarthOre
   m_EditorClassIdentifier: 
-  resourceName: Ore
-  sprite: {fileID: 21300000, guid: 845a931e3666b254b96818b557c77f8f, type: 3}
+  resourceName: Rare Earth Ore
+  sprite: {fileID: 21300000, guid: ece75972aaff472468063d0859953224, type: 3}

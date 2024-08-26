@@ -11,10 +11,7 @@ public class UIResourceList : MonoBehaviour
 
     public void UpdateResourceDisplay()
     {
-        for (int i=0; i < transform.childCount; i++)
-        {
-            Destroy(transform.GetChild(i).gameObject);
-        }
+        ClearResourceDisplay();
         for (int i=0; i < Mathf.Ceil((float) resources.Count / resourcesPerRow); i++)
         {
             int idx = i*resourcesPerRow;
@@ -31,6 +28,14 @@ public class UIResourceList : MonoBehaviour
             {
                 resourceRow.resourceAmountDict.Add(resources[resourcesPerRow * i + j], resourceAmounts[resourcesPerRow * i + j]);
             }
+        }
+    }
+
+    public void ClearResourceDisplay()
+    {
+        for (int i=0; i < transform.childCount; i++)
+        {
+            Destroy(transform.GetChild(i).gameObject);
         }
     }
 }

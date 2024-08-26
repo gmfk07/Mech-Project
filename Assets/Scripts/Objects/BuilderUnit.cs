@@ -5,29 +5,38 @@ using UnityEngine;
 
 public class BuilderUnit : Unit
 {
-    [SerializeField] private GameObject minePrefab;
+    [SerializeField] private GameObject metalMinePrefab;
+    [SerializeField] private GameObject rareEarthMinePrefab;
 
     void Update()
     {
         if (!IsMoving() && Input.GetButtonDown("Build"))
         {
-            if (WorldGenerator.instance.oreTiles.Contains(tileIndex) && FindOwningCity(tileIndex) != null)
+            if (WorldGenerator.instance.metalOreTiles.Contains(tileIndex) && GetOwningCities(tileIndex).Count > 0 && !ObjectManager.instance.tileCitySubObjectDict.ContainsKey(tileIndex))
             {
-                BuildSubObject(minePrefab);
+                BuildSubObject(metalMinePrefab);
+            }
+            if (WorldGenerator.instance.rareEarthOreTiles.Contains(tileIndex) && GetOwningCities(tileIndex).Count > 0 && !ObjectManager.instance.tileCitySubObjectDict.ContainsKey(tileIndex))
+            {
+                BuildSubObject(rareEarthMinePrefab);
             }
         }
     }
 
-    City FindOwningCity(int tileIndex)
+    List<City> GetOwningCities(int tileIndex)
     {
+        List<City> owningCities = new List<City>();
         foreach (Nation nation in NationManager.instance.nations)
         {
             foreach (City city in nation.cities)
             {
-                if (city.tilesWithinBorders.Contains(tileIndex)) { return city; }
+                if (city.tilesWithinBorders.Contains(tileIndex))
+                {
+                    owningCities.Add(city);
+                }
             }
         }
-        return null;
+        return owningCities;
     }
 
     void BuildSubObject(GameObject prefab)
@@ -38,8 +47,12 @@ public class BuilderUnit : Unit
         citySubObject.transform.SetParent(hexa.transform);
         citySubObject.transform.position = hexa.GetTileCenter(tileIndex);
 
-        City owningCity = FindOwningCity(tileIndex);
-        owningCity.citySubObjects.Add(citySubObject);
-        citySubObject.owner = owningCity;
+        List<City> owningCities = GetOwningCities(tileIndex);
+        foreach (City city in owningCities)
+        {
+            city.citySubObjects.Add(citySubObject);
+        }
+        citySubObject.owner = owningCities[0];
+        ObjectManager.instance.tileCitySubObjectDict.Add(tileIndex, citySubObject);
     }
 }

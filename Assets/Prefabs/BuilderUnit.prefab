@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1441896730637163303}
   - component: {fileID: 6900499311638302491}
   m_Layer: 2
-  m_Name: Unit
+  m_Name: BuilderUnit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51,7 +51,8 @@ MonoBehaviour:
   moveRange: 3
   remainingMoves: 0
   active: 1
-  minePrefab: {fileID: 2641466471201932237, guid: 3cda65ea0609ca1448f2f3164acf3667, type: 3}
+  metalMinePrefab: {fileID: 2641466471201932237, guid: 3cda65ea0609ca1448f2f3164acf3667, type: 3}
+  rareEarthMinePrefab: {fileID: 2641466471201932237, guid: 9af4ee85d8016b548b076530531d6070, type: 3}
 --- !u!1 &5264653350350003754
 GameObject:
   m_ObjectHideFlags: 0
