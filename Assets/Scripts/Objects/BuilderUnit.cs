@@ -52,7 +52,7 @@ public class BuilderUnit : Unit
         {
             city.citySubObjects.Add(citySubObject);
         }
-        citySubObject.owner = owningCities[0];
+        citySubObject.owningCity = owningCities[0];
         ObjectManager.instance.tileCitySubObjectDict.Add(tileIndex, citySubObject);
     }
 }

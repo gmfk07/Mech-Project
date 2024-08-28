@@ -34,17 +34,15 @@ namespace HexasphereGrid {
         List<PFClosedNode> close = new List<PFClosedNode>();
         int mSearchLimit = 2000;
         bool mIgnoreTileCanCross;
-        bool lastIgnoreTileCanCross;
         int lastRouteMatrixGroupMask = -1;
 
         void ComputeRouteMatrix(int groupMask) {
 
-            if (!needRefreshRouteMatrix && lastRouteMatrixGroupMask == groupMask && lastIgnoreTileCanCross == mIgnoreTileCanCross)
+            if (!needRefreshRouteMatrix && lastRouteMatrixGroupMask == groupMask)
                 return;
 
             needRefreshRouteMatrix = false;
             lastRouteMatrixGroupMask = groupMask;
-            lastIgnoreTileCanCross = mIgnoreTileCanCross;
 
             // Compute route
             for (int j = 0; j < tiles.Length; j++) {

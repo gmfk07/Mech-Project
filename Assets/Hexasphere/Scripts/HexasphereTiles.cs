@@ -38,7 +38,7 @@ namespace HexasphereGrid {
         /// <param name="mat">Material to be used.</param>
         /// <param name="temporary">If set to <c>true</c> the material is not saved anywhere and will be restored to default tile material when tile gets unselected.</param>
         public bool SetTileMaterial(int tileIndex, Material mat, bool temporary = false) {
-            if (tileIndex < 0 || tileIndex >= tiles.Length)
+            if (tileIndex < 0 || tileIndex >= tiles.Length || mat == null)
                 return false;
             Tile tile = tiles[tileIndex];
             if (temporary) {

@@ -81,8 +81,8 @@
     			#if HEXA_ALPHA || HEXA_LIT
                     float3 gPos   : TEXCOORD1;
                 #endif
-    			#if  HEXA_LIT
-                    float3 worldPos : TEXCOORD2;
+                #if HEXA_LIT
+                    float3 worldPos  : TEXCOORD2;
                 #endif
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -92,8 +92,8 @@
                 float3 uv    : TEXCOORD0;
                 half4 color  : COLOR;
                 #if HEXA_LIT
-                    float3 wpos  : TEXCOORD1;
-                    float4 scrPos   : TEXCOORD2;
+                    float3 wpos   : TEXCOORD1;
+                    float4 scrPos : TEXCOORD2;
                 #endif
             };
 
@@ -124,15 +124,15 @@
                     o.gPos = mul(unity_ObjectToWorld, float4(v.gPos.xyz, 1.0)).xyz;
                 #endif
                 #if HEXA_LIT
-                    o.worldPos = mul(unity_ObjectToWorld, o.vertex).xyz;
+                    o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 #endif
                 return o;
             }
 
             #if HEXA_LIT
-                #define OUTPUT_WPOS(tri, vertex, scrPosIn) tri.wpos = mul(unity_ObjectToWorld, vertex).xyz; tri.scrPos = scrPosIn;
+                #define OUTPUT_WPOS(tri, vertex) tri.wpos = mul(unity_ObjectToWorld, vertex).xyz; tri.scrPos = ComputeScreenPos(tri.pos);
             #else
-                #define OUTPUT_WPOS(tri, vertex, scrPosIn)
+                #define OUTPUT_WPOS(tri, vertex)
             #endif
 
             void Extrude(v2g p0, v2g p1, float extrusion, half4 color, inout TriangleStream<g2f> outputStream) {
@@ -143,39 +143,39 @@
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // float4(p1.pos.xyz * extrusion, p1.pos.w));
                 tri.uv = float3(0.0, 1.0, p1.uv.z);
                 tri.color = color;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 v.vertex = p0.vertex;
                 v.vertex.xyz *= extrusion;
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // float4(p0.pos.xyz * extrusion, p0.pos.w));
                 tri.uv = float3(1.0, 1.0, p0.uv.z);
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 v.vertex = p0.vertex;
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // p0.pos);
                 tri.uv = float3(1.0, 0.0, p0.uv.z);
                 half4 darkerColor = color * _GradientIntensity;
                 tri.color = darkerColor;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 outputStream.RestartStrip();
                 v.vertex = p1.vertex;
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // p1.pos);
                 tri.uv = float3(0.0, 0.0, p1.uv.z);
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 v.vertex = p1.vertex;
                 v.vertex.xyz *= extrusion;
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // float4(p1.pos.xyz * extrusion, p1.pos.w));
                 tri.uv = float3(0.0, 1.0, p1.uv.z);
                 tri.color = color;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 v.vertex = p0.vertex;
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // p0.pos);
                 tri.uv = float3(1.0, 0.0, p0.uv.z);
                 tri.color = darkerColor;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 outputStream.RestartStrip();
             }
@@ -213,7 +213,7 @@
                     v.vertex.xyz *= extrusion;
                     topFace.pos = TransformObjectToHClip(v.vertex.xyz);
                     topFace.uv = input[i].uv.xyz;
-                    OUTPUT_WPOS(topFace, v.vertex, ComputeScreenPos(topFace.pos));
+                    OUTPUT_WPOS(topFace, v.vertex);
                     outputStream.Append(topFace);
                 }
                 outputStream.RestartStrip();

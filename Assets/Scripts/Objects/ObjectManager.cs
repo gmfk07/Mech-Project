@@ -18,6 +18,7 @@ public class ObjectManager : MonoBehaviour
     Dictionary<int, City> tileCityDict = new Dictionary<int, City>();
     public Dictionary<int, CitySubObject> tileCitySubObjectDict = new Dictionary<int, CitySubObject>();
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
+    public Dictionary<int, List<City>> playerCityDict = new Dictionary<int, List<City>>();
 
     [HideInInspector] public Unit selectedUnit = null;
     PaintMode paintMode = PaintMode.None;
@@ -147,8 +148,9 @@ public class ObjectManager : MonoBehaviour
                 // Position capsule on top of tile
                 city.transform.position = hexa.GetTileCenter(tileIndex);
 
-                List<City> currentCities = NationManager.instance.nations[TurnManager.instance.currentPlayer].cities;
-
+                // City
+                city.owningNation = NationManager.instance.nations[TurnManager.instance.currentPlayer];
+                List<City> currentCities = city.owningNation.cities;
                 currentCities.Add(city);
                 city.ChangeName(NationManager.instance.nationCityNameLists[TurnManager.instance.currentPlayer][currentCities.Count - 1]);
 

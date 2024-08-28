@@ -9,6 +9,9 @@ public class NationManager : MonoBehaviour
     public List<Nation> nations = new List<Nation>();
     public List<List<String>> nationCityNameLists = new List<List<string>>();
     public List<Dictionary<Resource, int>> nationResourceDicts = new List<Dictionary<Resource, int>>();
+    public List<Material> groundBorderMaterials = new List<Material>();
+    public List<Material> waterBorderMaterials = new List<Material>();
+
 
     public void Start() {
         instance = this;

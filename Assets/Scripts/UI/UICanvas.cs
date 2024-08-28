@@ -162,7 +162,7 @@ public class UICanvas : MonoBehaviour
         {
             foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
             {
-                if (citySubObject.owner == selectedCity)
+                if (citySubObject.owningCity == selectedCity)
                 {
                     citySubObject.SetCitySubObjectButtonActive(visibility);
                     citySubObject.SetCitySubObjectOccupiedButtonActive(false);

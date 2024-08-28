@@ -9,8 +9,8 @@ using UnityEngine;
 public class City : Object
 {
     [SerializeField] private int borderDistance;
-    [SerializeField] private Material borderMaterialLand;
-    [SerializeField] private Material borderMaterialWater;
+    [HideInInspector] public Material borderMaterialLand;
+    [HideInInspector] public Material borderMaterialWater;
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
     //Contains all subobjects in borders, not just those assigned to the city. For that, check the subObjects' owner
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
@@ -19,6 +19,7 @@ public class City : Object
     private WorldPositionButton cityButton;
     [HideInInspector] public String cityName;
     [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
+    [HideInInspector] public Nation owningNation;
 
     // Start is called before the first frame update
     new void Start()
@@ -67,8 +68,8 @@ public class City : Object
                 }
                 tilesWithinBorders.Add(tile.index);
             }
-            hexa.SetTileMaterial(tileIndex, borderMaterialLand, false);
         }
+        hexa.SetTileMaterial(tileIndex, borderMaterialLand, false);
     }
 
     public void HandleClicked()

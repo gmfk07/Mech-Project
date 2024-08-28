@@ -82,9 +82,6 @@
                 float4 uv     : TEXCOORD0;
                 half4 color : COLOR;
                 float4 gPos     : TEXCOORD1;
-               #if HEXA_LIT
-                    float3 worldPos : TEXCOORD2;
-                #endif
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -123,19 +120,14 @@
                 color.a *= _TileAlpha;
                 o.color = color;
                 o.gPos = v.gPos;
-
-                #if HEXA_LIT
-                    o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                #endif
-
                 return o;
             }
 
 
             #if HEXA_LIT
-                #define OUTPUT_WPOS(tri, vertex, scrPosIn) tri.wpos = mul(unity_ObjectToWorld, vertex).xyz; tri.scrPos = scrPosIn;
+                #define OUTPUT_WPOS(tri, vertex) tri.wpos = mul(unity_ObjectToWorld, vertex).xyz; tri.scrPos = ComputeScreenPos(tri.pos);
             #else
-                #define OUTPUT_WPOS(tri, vertex, scrPosIn)
+                #define OUTPUT_WPOS(tri, vertex)
             #endif
 
 
@@ -152,7 +144,7 @@
                 tri.uv = float3(0.0, 1.0, p1.uv.z);
                 tri.color = color;
                 tri.norm = tri.axisNorm = norm1;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
 
                 //                	v = p0.pos.xyz * extrusion;
@@ -161,7 +153,7 @@
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // float4(v, p0.pos.w));
                 tri.uv = float3(1.0, 1.0, p0.uv.z);
                 tri.norm = tri.axisNorm = norm0;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
 
                 //                	v = p0.pos.xyz;
@@ -171,7 +163,7 @@
                 half4 darkerColor = color * _GradientIntensity;
                 tri.color = darkerColor;
                 tri.norm = tri.axisNorm = TransformObjectToWorldNormal(v.vertex.xyz - gPos);
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
 
                 // Second side triangle (completes the side quad)
@@ -181,7 +173,7 @@
                 tri.pos = TransformObjectToHClip(v.vertex.xyz); // p1.pos);
                 tri.uv = float3(0.0, 0.0, p1.uv.z);
                 tri.norm = tri.axisNorm = TransformObjectToWorldNormal(v.vertex.xyz - gPos);
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
 
                 //                	v = p1.pos.xyz * extrusion;
@@ -191,7 +183,7 @@
                 tri.uv = float3(0.0, 1.0, p1.uv.z);
                 tri.color = color;
                 tri.norm = tri.axisNorm = norm1;
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
 
                 //                	v = p0.pos.xyz;
@@ -200,7 +192,7 @@
                 tri.uv = float3(1.0, 0.0, p0.uv.z);
                 tri.color = darkerColor;
                 tri.norm = tri.axisNorm = TransformObjectToWorldNormal(v.vertex.xyz - gPos);
-                OUTPUT_WPOS(tri, v.vertex, ComputeScreenPos(tri.pos));
+                OUTPUT_WPOS(tri, v.vertex);
                 outputStream.Append(tri);
                 outputStream.RestartStrip();
             }
@@ -237,7 +229,7 @@
                 float3 norm = normalize(worldPos - gPos);
                 norm = lerp(norm, axisNorm, input[0].gPos.w);
                 float3 norm0 = topFace.norm = norm;
-                OUTPUT_WPOS(topFace, v.vertex, ComputeScreenPos(topFace.pos));
+                OUTPUT_WPOS(topFace, v.vertex);
 
                 outputStream.Append(topFace);
 
@@ -251,7 +243,7 @@
                 norm = normalize(worldPos - gPos);
                 norm = lerp(norm, axisNorm, input[0].gPos.w);
                 float3 norm1 = topFace.norm = norm;
-                OUTPUT_WPOS(topFace, v.vertex, ComputeScreenPos(topFace.pos));
+                OUTPUT_WPOS(topFace, v.vertex);
                 outputStream.Append(topFace);
 
                 //                    v = input[2].pos;
@@ -264,7 +256,7 @@
                 norm = normalize(worldPos - gPos);
                 norm = lerp(norm, axisNorm, input[0].gPos.w);
                 topFace.norm = norm;
-                OUTPUT_WPOS(topFace, v.vertex, ComputeScreenPos(topFace.pos));
+                OUTPUT_WPOS(topFace, v.vertex);
                 outputStream.Append(topFace);
 
                 outputStream.RestartStrip();

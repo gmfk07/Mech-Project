@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class CitySubObject : Object
 {
-    [HideInInspector] public City owner;
+    [HideInInspector] public City owningCity;
     private WorldPositionButton citySubObjectButton;
     private WorldPositionButton citySubObjectOccupiedButton;
     public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
@@ -47,7 +47,7 @@ public class CitySubObject : Object
 
     public void HandleSubObjectButtonClicked()
     {
-        if (!worked && owner.HasAvailablePopulation(1))
+        if (!worked && owningCity.HasAvailablePopulation(1))
         {
             StartBeingWorked();
         }
@@ -63,13 +63,13 @@ public class CitySubObject : Object
     private void StopBeingWorked()
     {
         worked = false;
-        owner.ChangeAvailablePopulation(1);
+        owningCity.ChangeAvailablePopulation(1);
         foreach (Resource resource in resourceProductionDict.Keys)
         {
-            owner.resourceProductionDict[resource] -= resourceProductionDict[resource];
-            if (owner.resourceProductionDict[resource] == 0)
+            owningCity.resourceProductionDict[resource] -= resourceProductionDict[resource];
+            if (owningCity.resourceProductionDict[resource] == 0)
             {
-                owner.resourceProductionDict.Remove(resource);
+                owningCity.resourceProductionDict.Remove(resource);
             }
         }
     }
@@ -78,16 +78,16 @@ public class CitySubObject : Object
     private void StartBeingWorked()
     {
         worked = true;
-        owner.ChangeAvailablePopulation(-1);
+        owningCity.ChangeAvailablePopulation(-1);
         foreach (Resource resource in resourceProductionDict.Keys)
         {
-            if (owner.resourceProductionDict.ContainsKey(resource))
+            if (owningCity.resourceProductionDict.ContainsKey(resource))
             {
-                owner.resourceProductionDict[resource] += resourceProductionDict[resource];
+                owningCity.resourceProductionDict[resource] += resourceProductionDict[resource];
             }
             else
             {
-                owner.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
+                owningCity.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
             }
         }
     }
@@ -99,7 +99,7 @@ public class CitySubObject : Object
         {
             StopBeingWorked();
         }
-        owner = selectedCity;
+        owningCity = selectedCity;
         SetCitySubObjectButtonActive(true);
         SetCitySubObjectOccupiedButtonActive(false);
     }

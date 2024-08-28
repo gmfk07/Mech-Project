@@ -17,10 +17,13 @@ namespace HexasphereGrid {
 		public event PathFindingEvent OnPathFindingCrossTile;
 
 		/// <summary>
-		/// Fired when path finding algorithmn evaluates a tile. Return the increased cost for tile.
+		/// Fired when left click on tile.
 		/// </summary>
 		public event TileEvent OnTileClick;
 
+		/// <summary>
+		/// Fired when right click on tile.
+		/// </summary>
 		public event TileEvent OnTileRightClick;
 
 		/// <summary>

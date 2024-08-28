@@ -11,6 +11,7 @@ public class WorldGenerator : MonoBehaviour
     public static WorldGenerator instance;
 
     Hexasphere hexa;
+    [SerializeField] private Material groundMaterial;
     [SerializeField] private Material waterMaterial;
     [SerializeField] private Material iceMaterial;
     [SerializeField] private float waterLevel;
@@ -29,6 +30,7 @@ public class WorldGenerator : MonoBehaviour
     [HideInInspector] public List<int> rareEarthOreTiles;
     [HideInInspector] public int northPoleTile;
     [HideInInspector] public int southPoleTile;
+    [SerializeField] private Texture2D grassTexture;
 
     // Start is called before the first frame update
     void Start()
@@ -57,6 +59,8 @@ public class WorldGenerator : MonoBehaviour
             {
                 hexa.SetTileExtrudeAmount(tile.index, (sample - waterLevel)*heightScale);
                 hexa.SetTileCanCross(tile.index, true);
+                hexa.SetTileTexture(tile.index, grassTexture);
+                hexa.SetTileMaterial(tile.index, groundMaterial);
             }
         }
 
@@ -161,11 +165,5 @@ public class WorldGenerator : MonoBehaviour
                 forestObject.transform.Rotate(-90, 0, 0, Space.Self);
             }
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
