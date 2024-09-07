@@ -61,7 +61,7 @@ public class ObjectManager : MonoBehaviour
         selectedUnit = null;
         foreach (Unit unit in tileUnitDict.Values)
         {
-            if (playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit))
+            if (playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit))
             {
                 unit.RefreshMoves();
             }
@@ -124,8 +124,9 @@ public class ObjectManager : MonoBehaviour
                     unit = Instantiate(battlerUnitPrefab).GetComponent<BattlerUnit>();
                 }
                 tileUnitDict.Add(tileIndex, unit);
+                int currentPlayer = TurnManager.instance.currentPlayer;
                 unit.tileIndex = tileIndex;
-                unit.owningNation = NationManager.instance.nations[TurnManager.instance.currentPlayer];
+                unit.owningNation = NationManager.instance.nations[currentPlayer];
 
                 // Parent it to hexasphere, so it rotates along it
                 unit.transform.SetParent(hexa.transform);
@@ -136,13 +137,13 @@ public class ObjectManager : MonoBehaviour
                 hexa.FlyTo(tileIndex, 0.5f);
 
                 //Add to player's dict
-                if (playerUnitDict.ContainsKey(0))
+                if (playerUnitDict.ContainsKey(currentPlayer))
                 {
-                    playerUnitDict[0].Add(unit);
+                    playerUnitDict[currentPlayer].Add(unit);
                 }
                 else
                 {
-                    playerUnitDict.Add(0, new List<Unit>() {unit});
+                    playerUnitDict.Add(currentPlayer, new List<Unit>() {unit});
                 }
                 selectedUnit = unit;
                 unit.active = true;
