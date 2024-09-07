@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using HexasphereGrid;
+using Unity.PlasticSCM.Editor.WebApi;
 
-enum PaintMode { None, Unit, City }
+enum PaintMode { None, BuilderUnit, BattlerUnit, City }
 
 public class ObjectManager : MonoBehaviour
 {
@@ -11,17 +12,19 @@ public class ObjectManager : MonoBehaviour
 
     public static ObjectManager instance;
 
-    [SerializeField] GameObject unitPrefab;
+    [SerializeField] GameObject builderUnitPrefab;
+    [SerializeField] GameObject battlerUnitPrefab;
     [SerializeField] GameObject cityPrefab;
 
     Dictionary<int, Unit> tileUnitDict = new Dictionary<int, Unit>();
     Dictionary<int, City> tileCityDict = new Dictionary<int, City>();
     public Dictionary<int, CitySubObject> tileCitySubObjectDict = new Dictionary<int, CitySubObject>();
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
-    public Dictionary<int, List<City>> playerCityDict = new Dictionary<int, List<City>>();
 
     [HideInInspector] public Unit selectedUnit = null;
     PaintMode paintMode = PaintMode.None;
+    private bool targeting = false;
+    [SerializeField] private Texture2D targetTexture;
 
     // Start is called before the first frame update
     void Start()
@@ -39,11 +42,15 @@ public class ObjectManager : MonoBehaviour
         {
             paintMode = PaintMode.None;
         }
-        if (GUI.Button(new Rect(850, 50, 220, 30), "Paint Unit"))
+        if (GUI.Button(new Rect(850, 50, 220, 30), "Paint Builder Unit"))
         {
-            paintMode = PaintMode.Unit;
+            paintMode = PaintMode.BuilderUnit;
         }
-        if (GUI.Button(new Rect(850, 90, 220, 30), "Paint City"))
+        if (GUI.Button(new Rect(850, 90, 220, 30), "Paint Battler Unit"))
+        {
+            paintMode = PaintMode.BattlerUnit;
+        }
+        if (GUI.Button(new Rect(850, 130, 220, 30), "Paint City"))
         {
             paintMode = PaintMode.City;
         }
@@ -51,9 +58,13 @@ public class ObjectManager : MonoBehaviour
 
     public void HandleNewTurn()
     {
+        selectedUnit = null;
         foreach (Unit unit in tileUnitDict.Values)
         {
-            unit.HandleNewTurn();
+            if (playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit))
+            {
+                unit.RefreshMoves();
+            }
         }
     }
 
@@ -97,14 +108,24 @@ public class ObjectManager : MonoBehaviour
 
     void TileClick(Hexasphere hexa, int tileIndex)
     {
-        if (paintMode == PaintMode.Unit)
+        //Paint Unit
+        if (paintMode == PaintMode.BuilderUnit || paintMode == PaintMode.BattlerUnit)
         {
             if (!tileUnitDict.ContainsKey(tileIndex) && hexa.GetTileCanCross(tileIndex))
             {
                 // Create the tile prefab
-                BuilderUnit unit = Instantiate(unitPrefab).GetComponent<BuilderUnit>();
+                Unit unit = null;
+                if (paintMode == PaintMode.BuilderUnit)
+                {
+                    unit = Instantiate(builderUnitPrefab).GetComponent<BuilderUnit>();
+                }
+                else if (paintMode == PaintMode.BattlerUnit)
+                {
+                    unit = Instantiate(battlerUnitPrefab).GetComponent<BattlerUnit>();
+                }
                 tileUnitDict.Add(tileIndex, unit);
                 unit.tileIndex = tileIndex;
+                unit.owningNation = NationManager.instance.nations[TurnManager.instance.currentPlayer];
 
                 // Parent it to hexasphere, so it rotates along it
                 unit.transform.SetParent(hexa.transform);
@@ -163,7 +184,25 @@ public class ObjectManager : MonoBehaviour
         }
         else if (paintMode == PaintMode.None)
         {
-            if (tileUnitDict.ContainsKey(tileIndex))
+            HandleTileSelected(tileIndex);
+        }
+    }
+
+    public void HandleTileSelected(int tileIndex)
+    {
+        if (targeting)
+        {
+            if (tileUnitDict.ContainsKey(tileIndex) && !playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
+            {
+                Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
+                BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
+                attackerUnit.AttackTargets(new List<Unit>() { targetUnit });
+            }
+            StopTargeting();
+        }
+        else
+        {
+            if (tileUnitDict.ContainsKey(tileIndex) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
             {
                 selectedUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
             }
@@ -171,9 +210,9 @@ public class ObjectManager : MonoBehaviour
             {
                 selectedUnit = null;
             }
-
-            hexa.FlyTo(tileIndex, 0.5f);
         }
+
+        hexa.FlyTo(tileIndex, 0.5f);
     }
 
     void TileRightClick(Hexasphere hexa, int tileIndex)
@@ -202,5 +241,18 @@ public class ObjectManager : MonoBehaviour
                 hexa.FlyTo(tileIndex, 0.5f);
             }
         }
+    }
+
+    //NOTE: Targeting is only valid if the current selectedUnit is a BattlerUnit! 
+    public void StartTargeting()
+    {
+        targeting = true;
+        Cursor.SetCursor(targetTexture, Vector2.zero, CursorMode.Auto);
+    }
+
+    public void StopTargeting()
+    {
+        targeting = false;
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
     }
 }

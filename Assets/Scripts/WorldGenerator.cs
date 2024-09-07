@@ -18,7 +18,6 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] private float forestCutoff;
     [SerializeField] private int metalOreCount;
     [SerializeField] private int rareEarthOreCount;
-    [SerializeField] private float heightScale;
     [SerializeField] private GameObject forestPrefab;
     [SerializeField] private GameObject metalOrePrefab;
     [SerializeField] private GameObject rareEarthOrePrefab;
@@ -57,7 +56,7 @@ public class WorldGenerator : MonoBehaviour
             }
             else
             {
-                hexa.SetTileExtrudeAmount(tile.index, (sample - waterLevel)*heightScale);
+                hexa.SetTileExtrudeAmount(tile.index, sample - waterLevel);
                 hexa.SetTileCanCross(tile.index, true);
                 hexa.SetTileTexture(tile.index, grassTexture);
                 hexa.SetTileMaterial(tile.index, groundMaterial);

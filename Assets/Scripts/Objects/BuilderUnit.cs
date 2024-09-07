@@ -10,7 +10,7 @@ public class BuilderUnit : Unit
 
     void Update()
     {
-        if (!IsMoving() && Input.GetButtonDown("Build"))
+        if (!IsMoving() && Input.GetButtonDown("Build") && ObjectManager.instance.selectedUnit == this)
         {
             if (WorldGenerator.instance.metalOreTiles.Contains(tileIndex) && GetOwningCities(tileIndex).Count > 0 && !ObjectManager.instance.tileCitySubObjectDict.ContainsKey(tileIndex))
             {
@@ -23,6 +23,7 @@ public class BuilderUnit : Unit
         }
     }
 
+    //A tile can be owned by multiple cities, but all cities owning a tile must be the same player's.
     List<City> GetOwningCities(int tileIndex)
     {
         List<City> owningCities = new List<City>();

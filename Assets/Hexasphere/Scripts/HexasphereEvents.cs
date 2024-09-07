@@ -17,12 +17,12 @@ namespace HexasphereGrid {
 		public event PathFindingEvent OnPathFindingCrossTile;
 
 		/// <summary>
-		/// Fired when left click on tile.
+		/// Fired when a tile is left-clicked.
 		/// </summary>
 		public event TileEvent OnTileClick;
 
 		/// <summary>
-		/// Fired when right click on tile.
+		/// Fired when a tile is right-clicked.
 		/// </summary>
 		public event TileEvent OnTileRightClick;
 

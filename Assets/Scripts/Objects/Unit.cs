@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Unit : Object
 {
@@ -11,16 +14,26 @@ public class Unit : Object
     public int moveRange;
     [HideInInspector] public int remainingMoves;
     [HideInInspector] public bool active = true;
+    [HideInInspector] public int hp;
+    public int maxHp;
+    [HideInInspector] public int rp;
+    public int maxRp;
+    public int evasionTarget;
+    public Nation owningNation;
+    protected WorldPositionButton unitButton;
+    [SerializeField] protected List<Sprite> unitButtonImages;
 
     // Start is called before the first frame update
-    new void Start()
+    override protected void Start()
     {
         base.Start();
+        hp = maxHp;
         path = new List<int>();
-        HandleNewTurn();
+        RefreshMoves();
+        StartCoroutine(CreateUnitButton());
     }
 
-    public void HandleNewTurn()
+    public void RefreshMoves()
     {
         remainingMoves = moveRange;
         active = true;
@@ -59,5 +72,28 @@ public class Unit : Object
         {
             StartCoroutine(MoveUnit());
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        hp = Math.Max(0, hp - damage);
+        if (hp == 0)
+        {
+            Destroy(this);
+        }
+    }
+
+    public IEnumerator CreateUnitButton()
+    {
+        while (UICanvas.instance == null || TurnManager.instance == null)
+        {
+            yield return null;
+        }
+        unitButton = UICanvas.instance.CreateUnitButton(this);
+        while (!unitButton.ButtonInitialized())
+        {
+            yield return null;
+        }
+        unitButton.ChangeButtonSprite(unitButtonImages[TurnManager.instance.currentPlayer]);
     }
 }

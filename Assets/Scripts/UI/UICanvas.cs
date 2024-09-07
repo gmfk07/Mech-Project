@@ -17,6 +17,7 @@ public class UICanvas : MonoBehaviour
     [SerializeField] GameObject cityButtonPrefab;
     [SerializeField] GameObject citySubObjectButtonPrefab;
     [SerializeField] GameObject citySubObjectOccupiedButtonPrefab;
+    [SerializeField] GameObject unitButtonPrefab;
     [SerializeField] Image cityPanel;
     [SerializeField] TextMeshProUGUI cityNameText;
     [SerializeField] TextMeshProUGUI cityPopulationText;
@@ -92,7 +93,7 @@ public class UICanvas : MonoBehaviour
     public void HandleMainButtonPressed() {
         if (mainButtonState == MainButtonState.NextTurn)
         {
-            ObjectManager.instance.HandleNewTurn();
+            TurnManager.instance.HandleNewTurn();
             UpdateMainButton();
         }
         else if (mainButtonState == MainButtonState.NextUnit)
@@ -132,6 +133,14 @@ public class UICanvas : MonoBehaviour
         citySubObjectOccupiedButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
         citySubObjectOccupiedButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{citySubObject.HandleSubObjectOccupiedButtonClicked(selectedCity);});
         return citySubObjectOccupiedButton.GetComponent<WorldPositionButton>(); 
+    }
+
+    public WorldPositionButton CreateUnitButton(Unit unit)
+    {
+        GameObject unitButton = Instantiate(unitButtonPrefab, transform);
+        unitButton.GetComponent<WorldPositionButton>().targetTransform = unit.transform;
+        unitButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{ObjectManager.instance.HandleTileSelected(unit.tileIndex);});
+        return unitButton.GetComponent<WorldPositionButton>(); 
     }
 
     public void SetSelectedCity(City selectedCity)

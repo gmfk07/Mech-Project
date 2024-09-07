@@ -9,8 +9,9 @@ using UnityEngine;
 public class City : Object
 {
     [SerializeField] private int borderDistance;
-    [HideInInspector] public Material borderMaterialLand;
-    [HideInInspector] public Material borderMaterialWater;
+    [HideInInspector] public Material landBorderMaterial;
+    [HideInInspector] public Material waterBorderMaterial;
+    //A tile can be owned by multiple cities, but all cities owning a tile must be the same player's.
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
     //Contains all subobjects in borders, not just those assigned to the city. For that, check the subObjects' owner
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
@@ -25,6 +26,8 @@ public class City : Object
     new void Start()
     {
         base.Start();
+        landBorderMaterial = owningNation.landBorderMaterial;
+        waterBorderMaterial = owningNation.waterBorderMaterial;
         PaintBorders();
         StartCoroutine(CreateCityButton());
         UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
@@ -54,22 +57,38 @@ public class City : Object
     {
         foreach (Tile tile in hexa.tiles)
         {
+            //Is the border tile already taken by another player?
+            bool tileTaken = false;
+            foreach (Nation nation in NationManager.instance.nations)
+            {
+                foreach (City city in nation.cities)
+                {
+                    if (city.tilesWithinBorders.Contains(tile.index) && city.owningNation.player != TurnManager.instance.currentPlayer)
+                    {
+                        tileTaken = true;
+                    }
+                }
+            }
+            if (tileTaken)
+            {
+                continue;
+            }
             //Make a path to the city and see if it's short enough
             List<int> path = hexa.FindPath(tileIndex, tile.index, 0, -1, true);
-            if (path != null && path.Count <= borderDistance)
+            if (path != null && path.Count <= borderDistance && !WorldGenerator.instance.iceTiles.Contains(tile.index))
             {
                 if (WorldGenerator.instance.waterTiles.Contains(tile.index))
                 {
-                    hexa.SetTileMaterial(tile.index, borderMaterialWater, false);
+                    hexa.SetTileMaterial(tile.index, waterBorderMaterial, false);
                 }
                 else
                 {
-                    hexa.SetTileMaterial(tile.index, borderMaterialLand, false);
+                    hexa.SetTileMaterial(tile.index, landBorderMaterial, false);
                 }
                 tilesWithinBorders.Add(tile.index);
             }
         }
-        hexa.SetTileMaterial(tileIndex, borderMaterialLand, false);
+        hexa.SetTileMaterial(tileIndex, landBorderMaterial, false);
     }
 
     public void HandleClicked()

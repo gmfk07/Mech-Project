@@ -11,11 +11,13 @@ public class WorldPositionButton : MonoBehaviour
     [HideInInspector] public Transform targetTransform;
     private GameObject buttonObject;
     [SerializeField] private float height;
+    private Button button;
     
     private void Start()
     {
         hexa = Hexasphere.GetInstance("Hexasphere");
-        buttonObject = GetComponentInChildren<Button>().gameObject;
+        button = GetComponentInChildren<Button>();
+        buttonObject = button.gameObject;
     }
 
     private void Update()
@@ -24,5 +26,16 @@ public class WorldPositionButton : MonoBehaviour
         GetComponent<RectTransform>().position = screenPoint;
 
         buttonObject.SetActive(hexa.IsTileVisibleFromCamera(targetTransform.gameObject.GetComponent<Object>().tileIndex, Camera.main));
+    }
+
+    //Is the button initialized and ready to be interacted with?
+    public bool ButtonInitialized()
+    {
+        return button != null;
+    }
+
+    public void ChangeButtonSprite(Sprite newSprite)
+    {
+        button.image.sprite = newSprite;
     }
 }

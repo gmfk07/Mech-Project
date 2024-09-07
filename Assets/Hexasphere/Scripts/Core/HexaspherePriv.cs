@@ -64,6 +64,7 @@ namespace HexasphereGrid {
         int uvChunkCount, wireChunkCount;
         Vector3 currentRotationShift;
         bool leftMouseButtonClick, leftMouseButtonPressed, leftMouseButtonRelease;
+        bool rightMouseButtonPressed, rightMouseButtonRelease;
         bool allowedTextureArray;
         bool useEditorRay;
         Ray editorRay;
@@ -171,6 +172,7 @@ namespace HexasphereGrid {
                 leftMouseButtonPressed = leftMouseButtonClick || Input.GetMouseButton(1);
             } else {
                 leftMouseButtonPressed = leftMouseButtonClick || Input.GetMouseButton(0);
+                rightMouseButtonPressed = Input.GetMouseButton(1);
             }
 #if VR_GOOGLE
 												if (GVR_TouchStarted)
@@ -181,6 +183,7 @@ namespace HexasphereGrid {
                 leftMouseButtonRelease = Input.GetMouseButtonUp(1);
             } else {
                 leftMouseButtonRelease = Input.GetMouseButtonUp(0) || Input.GetButtonUp("Fire1");
+                rightMouseButtonRelease = Input.GetMouseButtonUp(1);
             }
 #if VR_GOOGLE
 												if (GvrController.TouchUp) {
@@ -217,8 +220,6 @@ namespace HexasphereGrid {
             if (canInteract) {
                 if (_invertedMode) {
                     CheckUserInteractionInvertedMode();
-                } else if (mouseIsOver || _VREnabled) {
-                    CheckUserInteractionNormalMode();
                 } else {
                     if (!mouseIsOver) CheckCameraWithinCollider();
                     if (mouseIsOver || _VREnabled) {
@@ -270,9 +271,6 @@ namespace HexasphereGrid {
                 return;
 
             // Check if it's really outside of hexasphere
-            Vector3 dummy;
-            Ray dummyRay;
-            if (!GetHitPoint(out dummy, out dummyRay)) {
             if (!GetHitPoint(out _, out _)) {
                 if (CheckCameraWithinCollider()) return;
                 mouseIsOver = false;
@@ -534,6 +532,11 @@ namespace HexasphereGrid {
                 lastClickedTile = lastHoverTileIndex;
             }
 
+            if (rightMouseButtonRelease && OnTileRightClick != null) {
+                OnTileRightClick(this, lastHoverTileIndex);
+                lastClickedTile = lastHoverTileIndex;
+            }
+
             if (_zoomEnabled) {
                 // Use mouse wheel to zoom in and out
                 float wheel = Input.GetAxis("Mouse ScrollWheel");
@@ -565,7 +568,6 @@ namespace HexasphereGrid {
                     if (wheelAccel >= 0.01f || wheelAccel <= -0.01f) {
                         Vector3 camPos = _cameraMain.transform.position - (transform.position - _cameraMain.transform.position) * wheelAccel * _zoomSpeed;
                         _cameraMain.transform.position = camPos;
-                        float radiusSqr = (1.0f + _zoomMinDistance) * transform.localScale.z * 0.5f + (_cameraMain.nearClipPlane + 0.01f);
                         float extrusionFactor = _extruded ? 1f + _extrudeMultiplier : 1f;
                         float radiusSqr = (1.0f + _zoomMinDistance) * transform.localScale.z * 0.5f * extrusionFactor + (_cameraMain.nearClipPlane + 0.01f);
                         radiusSqr *= radiusSqr;
@@ -680,6 +682,11 @@ namespace HexasphereGrid {
 
             if (leftMouseButtonRelease && !hasDragged && (Time.time - clickStart <= _clickDuration) && OnTileClick != null) {
                 OnTileClick(this, lastHoverTileIndex);
+                lastClickedTile = lastHoverTileIndex;
+            }
+
+            if (rightMouseButtonRelease && OnTileRightClick != null) {
+                OnTileRightClick(this, lastHoverTileIndex);
                 lastClickedTile = lastHoverTileIndex;
             }
 

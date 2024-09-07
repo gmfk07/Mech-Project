@@ -9,7 +9,7 @@ public class Object : MonoBehaviour
 
     protected Hexasphere hexa;
 
-    protected void Start()
+    virtual protected void Start()
     {
         hexa = Hexasphere.GetInstance("Hexasphere");
         AlignToSurface();

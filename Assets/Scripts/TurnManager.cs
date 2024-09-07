@@ -11,4 +11,10 @@ public class TurnManager : MonoBehaviour
     {
         instance = this;
     }
+
+    public void HandleNewTurn()
+    {
+        currentPlayer = (currentPlayer + 1) % NationManager.instance.nationCount;
+        ObjectManager.instance.HandleNewTurn();
+    }
 }
