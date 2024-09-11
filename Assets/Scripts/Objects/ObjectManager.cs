@@ -148,6 +148,7 @@ public class ObjectManager : MonoBehaviour
                 selectedUnit = unit;
                 unit.active = true;
                 UICanvas.instance.UpdateMainButton();
+                UICanvas.instance.HandleUnitSelected();
             }
             else if (tileUnitDict.ContainsKey(tileIndex))
             {
@@ -189,33 +190,6 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-    public void HandleTileSelected(int tileIndex)
-    {
-        if (targeting)
-        {
-            if (tileUnitDict.ContainsKey(tileIndex) && !playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
-            {
-                Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
-                BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
-                attackerUnit.AttackTargets(new List<Unit>() { targetUnit });
-            }
-            StopTargeting();
-        }
-        else
-        {
-            if (tileUnitDict.ContainsKey(tileIndex) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
-            {
-                selectedUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
-            }
-            else
-            {
-                selectedUnit = null;
-            }
-        }
-
-        hexa.FlyTo(tileIndex, 0.5f);
-    }
-
     void TileRightClick(Hexasphere hexa, int tileIndex)
     {
         if (selectedUnit != null && !selectedUnit.IsMoving() && !tileUnitDict.ContainsKey(tileIndex))
@@ -242,6 +216,35 @@ public class ObjectManager : MonoBehaviour
                 hexa.FlyTo(tileIndex, 0.5f);
             }
         }
+    }
+
+    public void HandleTileSelected(int tileIndex)
+    {
+        if (targeting)
+        {
+            if (tileUnitDict.ContainsKey(tileIndex) && !playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
+            {
+                Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
+                BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
+                attackerUnit.AttackTargets(new List<Unit>() { targetUnit });
+            }
+            StopTargeting();
+        }
+        else
+        {
+            if (tileUnitDict.ContainsKey(tileIndex) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
+            {
+                selectedUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
+                UICanvas.instance.HandleUnitSelected();
+            }
+            else
+            {
+                selectedUnit = null;
+                UICanvas.instance.HandleUnitDeselected();
+            }
+        }
+
+        hexa.FlyTo(tileIndex, 0.5f);
     }
 
     //NOTE: Targeting is only valid if the current selectedUnit is a BattlerUnit! 

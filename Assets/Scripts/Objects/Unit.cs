@@ -22,12 +22,14 @@ public class Unit : Object
     public Nation owningNation;
     protected WorldPositionButton unitButton;
     [SerializeField] protected List<Sprite> unitButtonImages;
+    public string unitName;
 
     // Start is called before the first frame update
     override protected void Start()
     {
         base.Start();
         hp = maxHp;
+        rp = maxRp;
         path = new List<int>();
         RefreshMoves();
         StartCoroutine(CreateUnitButton());

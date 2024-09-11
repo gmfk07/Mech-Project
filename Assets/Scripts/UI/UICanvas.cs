@@ -19,6 +19,7 @@ public class UICanvas : MonoBehaviour
     [SerializeField] GameObject citySubObjectOccupiedButtonPrefab;
     [SerializeField] GameObject unitButtonPrefab;
     [SerializeField] Image cityPanel;
+    [SerializeField] UnitPanel unitPanel;
     [SerializeField] TextMeshProUGUI cityNameText;
     [SerializeField] TextMeshProUGUI cityPopulationText;
     [SerializeField] UIResourceList uiResourceList;
@@ -35,6 +36,7 @@ public class UICanvas : MonoBehaviour
         hexa.OnTileRightClick += (hexa, tileIndex) => SetCityPanelVisible(false);
         StartCoroutine(UpdateMainButtonEnumerator());
         SetCityPanelVisible(false);
+        unitPanel.SetVisibility(false);
     }
 
     void Update()
@@ -109,6 +111,16 @@ public class UICanvas : MonoBehaviour
             }
             hexa.FlyTo(tileToFlyTo, 0.5f);
         }
+    }
+
+    public void HandleUnitSelected()
+    {
+        unitPanel.SetVisibility(true);
+    }
+
+    public void HandleUnitDeselected()
+    {
+        unitPanel.SetVisibility(false);
     }
 
     public WorldPositionButton CreateCityButton(City city)
