@@ -170,4 +170,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 0}
-  height: 1
+  UIObject: {fileID: 489558115082293872}
+  height: 4

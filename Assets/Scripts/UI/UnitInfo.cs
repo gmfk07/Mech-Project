@@ -9,13 +9,15 @@ public class UnitInfo : MonoBehaviour
     [SerializeField] private TextMeshProUGUI unitName;
     [SerializeField] private TextMeshProUGUI unitHp;
     [SerializeField] private TextMeshProUGUI unitRp;
+    [SerializeField] private TextMeshProUGUI unitMv;
 
-    void UpdateText()
+    public void UpdateText()
     {
         Unit selectedUnit = ObjectManager.instance.selectedUnit;
         unitName.text = selectedUnit.unitName;
         unitHp.text = "HP: " + selectedUnit.hp + "/" + selectedUnit.maxHp;
         unitRp.text = "RP: " + selectedUnit.rp + "/" + selectedUnit.maxRp;
+        unitMv.text = "MV: " + selectedUnit.remainingMoves + "/" + selectedUnit.moveRange;
     }
 
     public void SetVisibility(bool visibility)
@@ -25,6 +27,7 @@ public class UnitInfo : MonoBehaviour
             unitName.enabled = true;
             unitHp.enabled = true;
             unitRp.enabled = true;
+            unitMv.enabled = true;
             UpdateText();
         }
         else
@@ -32,6 +35,7 @@ public class UnitInfo : MonoBehaviour
             unitName.enabled = false;
             unitHp.enabled = false;
             unitRp.enabled = false;
+            unitMv.enabled = false;
         }
     }
 }

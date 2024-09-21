@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +19,16 @@ public class UICanvas : MonoBehaviour
     [SerializeField] GameObject citySubObjectButtonPrefab;
     [SerializeField] GameObject citySubObjectOccupiedButtonPrefab;
     [SerializeField] GameObject unitButtonPrefab;
+    [SerializeField] GameObject worldPositionTextPrefab;
     [SerializeField] Image cityPanel;
     [SerializeField] UnitPanel unitPanel;
     [SerializeField] TextMeshProUGUI cityNameText;
     [SerializeField] TextMeshProUGUI cityPopulationText;
-    [SerializeField] UIResourceList uiResourceList;
+    [SerializeField] ResourceList resourceList;
     [HideInInspector] City selectedCity;
     [SerializeField] private Button mainButton;
     private MainButtonState mainButtonState;
+    [SerializeField] private Transform worldElementParent;
 
     void Start()
     {
@@ -95,21 +98,21 @@ public class UICanvas : MonoBehaviour
     public void HandleMainButtonPressed() {
         if (mainButtonState == MainButtonState.NextTurn)
         {
+            ObjectManager.instance.DeselectUnit();
             TurnManager.instance.HandleNewTurn();
             UpdateMainButton();
         }
         else if (mainButtonState == MainButtonState.NextUnit)
         {
-            int tileToFlyTo = -1;
+            int tileSelected = -1;
             foreach (Unit unit in ObjectManager.instance.playerUnitDict[TurnManager.instance.currentPlayer])
             {
-                if (tileToFlyTo == -1 && unit.active)
+                if (tileSelected == -1 && unit.active)
                 {
-                    ObjectManager.instance.selectedUnit = unit;
-                    tileToFlyTo = unit.tileIndex;
+                    tileSelected = unit.tileIndex;
                 }
             }
-            hexa.FlyTo(tileToFlyTo, 0.5f);
+            ObjectManager.instance.HandleTileSelected(tileSelected);
         }
     }
 
@@ -125,7 +128,7 @@ public class UICanvas : MonoBehaviour
 
     public WorldPositionButton CreateCityButton(City city)
     {
-        GameObject cityButton = Instantiate(cityButtonPrefab, transform);
+        GameObject cityButton = Instantiate(cityButtonPrefab, worldElementParent);
         cityButton.GetComponent<WorldPositionButton>().targetTransform = city.transform;
         cityButton.GetComponentInChildren<Button>().onClick.AddListener(city.HandleClicked);
         return cityButton.GetComponent<WorldPositionButton>();
@@ -133,7 +136,7 @@ public class UICanvas : MonoBehaviour
 
     public WorldPositionButton CreateCitySubObjectButton(CitySubObject citySubObject)
     {
-        GameObject citySubObjectButton = Instantiate(citySubObjectButtonPrefab, transform);
+        GameObject citySubObjectButton = Instantiate(citySubObjectButtonPrefab, worldElementParent);
         citySubObjectButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
         citySubObjectButton.GetComponentInChildren<Button>().onClick.AddListener(citySubObject.HandleSubObjectButtonClicked);
         return citySubObjectButton.GetComponent<WorldPositionButton>(); 
@@ -141,7 +144,7 @@ public class UICanvas : MonoBehaviour
 
     public WorldPositionButton CreateCitySubObjectOccupiedButton(CitySubObject citySubObject)
     {
-        GameObject citySubObjectOccupiedButton = Instantiate(citySubObjectOccupiedButtonPrefab, transform);
+        GameObject citySubObjectOccupiedButton = Instantiate(citySubObjectOccupiedButtonPrefab, worldElementParent);
         citySubObjectOccupiedButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
         citySubObjectOccupiedButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{citySubObject.HandleSubObjectOccupiedButtonClicked(selectedCity);});
         return citySubObjectOccupiedButton.GetComponent<WorldPositionButton>(); 
@@ -149,10 +152,17 @@ public class UICanvas : MonoBehaviour
 
     public WorldPositionButton CreateUnitButton(Unit unit)
     {
-        GameObject unitButton = Instantiate(unitButtonPrefab, transform);
+        GameObject unitButton = Instantiate(unitButtonPrefab, worldElementParent);
         unitButton.GetComponent<WorldPositionButton>().targetTransform = unit.transform;
         unitButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{ObjectManager.instance.HandleTileSelected(unit.tileIndex);});
         return unitButton.GetComponent<WorldPositionButton>(); 
+    }
+
+    public WorldPositionElement CreateWorldPositionText(Transform transform)
+    {
+        GameObject unitButton = Instantiate(worldPositionTextPrefab, worldElementParent);
+        unitButton.GetComponent<WorldPositionElement>().targetTransform = transform;
+        return unitButton.GetComponent<WorldPositionElement>(); 
     }
 
     public void SetSelectedCity(City selectedCity)
@@ -166,17 +176,17 @@ public class UICanvas : MonoBehaviour
         cityPanel.enabled = visibility;
         cityNameText.enabled = visibility;
         cityPopulationText.enabled = visibility;
-        uiResourceList.enabled = visibility;
+        resourceList.enabled = visibility;
         
         if (visibility)
         {
             ObjectManager.instance.selectedUnit = null;
-            uiResourceList.enabled = true;
+            resourceList.enabled = true;
             UpdateResourceList();
         }
         else
         {
-            uiResourceList.ClearResourceDisplay();
+            resourceList.ClearResourceDisplay();
         }
 
         if (selectedCity != null)
@@ -207,9 +217,14 @@ public class UICanvas : MonoBehaviour
             amounts.Add(selectedCity.resourceProductionDict[resource]);
         }
 
-        uiResourceList.resources = resources;
-        uiResourceList.resourceAmounts = amounts;
-        uiResourceList.UpdateResourceDisplay();
+        resourceList.resources = resources;
+        resourceList.resourceAmounts = amounts;
+        resourceList.UpdateResourceDisplay();
+    }
+
+    public void UpdateUnitInfo()
+    {
+        unitPanel.UpdateUnitInfo();
     }
 
     public void SetCityPopulationText(int availablePopulation, int totalPopulation)

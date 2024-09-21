@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,18 +22,19 @@ public class Unit : Object
     public int evasionTarget;
     public Nation owningNation;
     protected WorldPositionButton unitButton;
+    protected WorldPositionElement unitText;
     [SerializeField] protected List<Sprite> unitButtonImages;
     public string unitName;
+    [SerializeField] private Animator unitAnimator;
 
-    // Start is called before the first frame update
-    override protected void Start()
+    protected void Awake()
     {
-        base.Start();
         hp = maxHp;
         rp = maxRp;
         path = new List<int>();
         RefreshMoves();
         StartCoroutine(CreateUnitButton());
+        StartCoroutine(CreateUnitText());
     }
 
     public void RefreshMoves()
@@ -50,6 +52,7 @@ public class Unit : Object
         startTime = Time.time;
         Vector3 startPosition = transform.localPosition;
         Vector3 endPosition = hexa.GetTileCenter(path[0], worldSpace: false);
+        unitAnimator.SetBool("isMoving", true);
 
         float t = 0;
         while (t < 1f)
@@ -74,6 +77,10 @@ public class Unit : Object
         {
             StartCoroutine(MoveUnit());
         }
+        else
+        {
+            unitAnimator.SetBool("isMoving", false);
+        }
     }
 
     public void TakeDamage(int damage)
@@ -97,5 +104,23 @@ public class Unit : Object
             yield return null;
         }
         unitButton.ChangeButtonSprite(unitButtonImages[TurnManager.instance.currentPlayer]);
+        unitButton.SetVisibility(true);
+    }
+
+    public IEnumerator CreateUnitText()
+    {
+        while (UICanvas.instance == null)
+        {
+            yield return null;
+        }
+        unitText = UICanvas.instance.CreateWorldPositionText(transform);
+        unitText.GetComponentInChildren<TextMeshProUGUI>().text = evasionTarget.ToString();
+        SetUnitTextVisibility(false);
+        unitText.GetComponentInChildren<TextMeshProUGUI>().raycastTarget = false;
+    }
+
+    public void SetUnitTextVisibility(bool visibility)
+    {
+        unitText.SetVisibility(visibility);
     }
 }

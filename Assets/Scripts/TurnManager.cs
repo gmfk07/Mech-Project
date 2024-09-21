@@ -5,11 +5,13 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     public static TurnManager instance;
-    [HideInInspector] public int currentPlayer = 0;
+    [HideInInspector] public int currentPlayer = -1;
 
     void Start()
     {
         instance = this;
+        currentPlayer = -1;
+        HandleNewTurn();
     }
 
     public void HandleNewTurn()

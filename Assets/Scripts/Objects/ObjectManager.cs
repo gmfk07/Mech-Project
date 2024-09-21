@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HexasphereGrid;
 using Unity.PlasticSCM.Editor.WebApi;
+using System.Linq;
 
 enum PaintMode { None, BuilderUnit, BattlerUnit, City }
 
@@ -11,6 +12,9 @@ public class ObjectManager : MonoBehaviour
     Hexasphere hexa;
 
     public static ObjectManager instance;
+
+    [SerializeField] private float targetCursorOffset;
+    [SerializeField] private float heightDifferenceMoveLimit;
 
     [SerializeField] GameObject builderUnitPrefab;
     [SerializeField] GameObject battlerUnitPrefab;
@@ -22,6 +26,7 @@ public class ObjectManager : MonoBehaviour
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
 
     [HideInInspector] public Unit selectedUnit = null;
+    [HideInInspector] public Weapon selectedWeapon = null;
     PaintMode paintMode = PaintMode.None;
     private bool targeting = false;
     [SerializeField] private Texture2D targetTexture;
@@ -34,6 +39,7 @@ public class ObjectManager : MonoBehaviour
         hexa.OnTileClick += TileClick;
         hexa.OnTileRightClick += TileRightClick;
         hexa.OnTileMouseOver += TileMouseOver;
+        hexa.OnPathFindingCrossTile += PathFindingCrossTile;
     }
 
     void OnGUI()
@@ -65,6 +71,16 @@ public class ObjectManager : MonoBehaviour
             {
                 unit.RefreshMoves();
             }
+
+            //Only display unitText if the current player doesn't own the unit
+            if (playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer))
+            {
+                unit.SetUnitTextVisibility(!playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit));
+            }
+            else
+            {
+                unit.SetUnitTextVisibility(true);
+            }
         }
     }
 
@@ -83,24 +99,41 @@ public class ObjectManager : MonoBehaviour
 
     void TileMouseOver(Hexasphere hexa, int tileIndex)
     {
-        hexa.highlightEnabled = false;
+        hexa.highlightEnabled = true;
         hexa.ClearTiles(true, false, false);
 
-        if (selectedUnit != null)
+        if (selectedUnit != null && !targeting)
         {
-            hexa.highlightEnabled = true;
+            hexa.highlightEnabled = false;
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, false);
             if (path != null && path.Count > 0)
             {
-                path.RemoveAt(path.Count - 1);
-                path.Add(selectedUnit.tileIndex);
-                if (path.Count <= selectedUnit.remainingMoves)
+                path.Insert(0, selectedUnit.tileIndex);
+                if (CalculatePathLength(hexa, path) > selectedUnit.remainingMoves)
                 {
-                    hexa.SetTileColor(path, Color.white, true);
+                    hexa.SetTileColor(path, Color.red, true);
                 }
                 else
                 {
-                    hexa.SetTileColor(path, Color.red, true);
+                    for (int i=0; i<path.Count; i++)
+                    {
+                        if (i == 0)
+                        {
+                            hexa.SetTileColor(path[i], Color.white, true);
+                        }
+                        else
+                        {
+                            int tileCrossCost = (int) PathFindingCrossTile(hexa, path[i], path[i-1]);
+                            if (tileCrossCost == 1)
+                            {
+                                hexa.SetTileColor(path[i], Color.white, true);
+                            }
+                            else if (tileCrossCost == 2)
+                            {
+                                hexa.SetTileColor(path[i], Color.yellow, true);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -113,6 +146,7 @@ public class ObjectManager : MonoBehaviour
         {
             if (!tileUnitDict.ContainsKey(tileIndex) && hexa.GetTileCanCross(tileIndex))
             {
+                UICanvas.instance.HandleUnitDeselected();
                 // Create the tile prefab
                 Unit unit = null;
                 if (paintMode == PaintMode.BuilderUnit)
@@ -192,6 +226,7 @@ public class ObjectManager : MonoBehaviour
 
     void TileRightClick(Hexasphere hexa, int tileIndex)
     {
+        StopTargeting();
         if (selectedUnit != null && !selectedUnit.IsMoving() && !tileUnitDict.ContainsKey(tileIndex))
         {
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, false);
@@ -212,6 +247,7 @@ public class ObjectManager : MonoBehaviour
                     selectedUnit.active = false;
                     UICanvas.instance.UpdateMainButton();
                 }
+                UICanvas.instance.UpdateUnitInfo();
 
                 hexa.FlyTo(tileIndex, 0.5f);
             }
@@ -220,9 +256,10 @@ public class ObjectManager : MonoBehaviour
 
     public void HandleTileSelected(int tileIndex)
     {
+        bool currentPlayerHasUnits = playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer);
         if (targeting)
         {
-            if (tileUnitDict.ContainsKey(tileIndex) && !playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
+            if (tileUnitDict.ContainsKey(tileIndex) && currentPlayerHasUnits && !playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
             {
                 Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
                 BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
@@ -232,31 +269,69 @@ public class ObjectManager : MonoBehaviour
         }
         else
         {
-            if (tileUnitDict.ContainsKey(tileIndex) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
+            if (tileUnitDict.ContainsKey(tileIndex) && currentPlayerHasUnits && playerUnitDict[TurnManager.instance.currentPlayer].Contains(tileUnitDict[tileIndex]))
             {
+                UICanvas.instance.HandleUnitDeselected();
                 selectedUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
                 UICanvas.instance.HandleUnitSelected();
             }
             else
             {
-                selectedUnit = null;
-                UICanvas.instance.HandleUnitDeselected();
+                DeselectUnit();
             }
         }
 
         hexa.FlyTo(tileIndex, 0.5f);
     }
 
+    float PathFindingCrossTile(Hexasphere hexa, int toTileIndex, int fromTileIndex)
+    {
+        if (Mathf.Abs(hexa.GetTileExtrudeAmount(toTileIndex) - hexa.GetTileExtrudeAmount(fromTileIndex)) > heightDifferenceMoveLimit)
+        {
+            return 2;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    float CalculatePathLength(Hexasphere hexa, List<int> path)
+    {
+        float length = 0;
+        for (int i=0; i<path.Count; i++)
+        {
+            if (i > 0)
+            {
+                length += PathFindingCrossTile(hexa, path[i], path[i-1]);
+            }
+        }
+        return length;
+    }
+
     //NOTE: Targeting is only valid if the current selectedUnit is a BattlerUnit! 
     public void StartTargeting()
     {
         targeting = true;
-        Cursor.SetCursor(targetTexture, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(targetTexture, new Vector2(targetCursorOffset, targetCursorOffset), CursorMode.Auto);
     }
 
     public void StopTargeting()
     {
         targeting = false;
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+    }
+
+    public void SkipSelectedUnitTurn()
+    {
+        selectedUnit.active = false;
+        UICanvas.instance.UpdateMainButton();
+        DeselectUnit();
+    }
+
+    public void DeselectUnit()
+    {
+        selectedUnit = null;
+        UICanvas.instance.HandleUnitDeselected();
     }
 }
