@@ -61,6 +61,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 821518534b1947940a2ffbffba31a492, type: 3}
   unitName: Colossus
   unitAnimator: {fileID: 1498473146155059018}
+  legsTransform: {fileID: 1498473146164848782}
   hardpoints: 2
   weaponList:
   - {fileID: 11400000, guid: f887c47a84314934794bda50ba7e4d8f, type: 2}
@@ -274,6 +275,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 4b4c08e1e0bf2134cac5305bd468af93, type: 2}
+    - target: {fileID: 9500000, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -402,6 +407,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 7221d7ce4e8af1240a17b35338af03bf, type: 2}
+    - target: {fileID: 9500000, guid: f7f6fee642cfb5a40aa0a1fe25e8196a, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

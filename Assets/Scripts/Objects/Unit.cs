@@ -26,6 +26,7 @@ public class Unit : Object
     [SerializeField] protected List<Sprite> unitButtonImages;
     public string unitName;
     [SerializeField] private Animator unitAnimator;
+    [SerializeField] private Transform legsTransform;
 
     protected void Awake()
     {
@@ -49,29 +50,56 @@ public class Unit : Object
     }
 
     public IEnumerator MoveUnit() {
-        startTime = Time.time;
-        Vector3 startPosition = transform.localPosition;
-        Vector3 endPosition = hexa.GetTileCenter(path[0], worldSpace: false);
-        unitAnimator.SetBool("isMoving", true);
+        Vector3 localStartPositionNoExtrusion = hexa.GetTileCenter(tileIndex, worldSpace: false, includeExtrusion: false);
+        Vector3 globalStartPositionNoExtrusion = hexa.transform.TransformPoint(localStartPositionNoExtrusion);
+        Vector3 localEndPositionNoExtrusion = hexa.GetTileCenter(path[0], worldSpace: false, includeExtrusion: false);
+        Vector3 globalEndPositionNoExtrusion = hexa.transform.TransformPoint(localEndPositionNoExtrusion);
+        Vector3 localEndPositionExtrusion = hexa.GetTileCenter(path[0], worldSpace: false);
+        Vector3 globalEndPositionExtrusion = hexa.transform.TransformPoint(localEndPositionExtrusion);
 
+        float rightDot = Vector3.Dot(legsTransform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
+        float forwardDot = Vector3.Dot(legsTransform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
+        float maxRightDot = 0.01f;
+
+        while (Mathf.Abs(rightDot) > maxRightDot || forwardDot < 0)
+        {
+            rightDot = Vector3.Dot(legsTransform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
+            forwardDot = Vector3.Dot(legsTransform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
+            if (rightDot > 0)
+            {
+                unitAnimator.SetBool("turnRight", true);
+                unitAnimator.SetBool("turnLeft", false);
+            }
+            else
+            {
+                unitAnimator.SetBool("turnLeft", true);
+                unitAnimator.SetBool("turnRight", false);
+            }
+            yield return null;
+        }
+
+        unitAnimator.SetBool("turnLeft", false);
+        unitAnimator.SetBool("turnRight", false);
+
+        startTime = Time.time;
         float t = 0;
         while (t < 1f)
         {
             // Compute next position
             t = (Time.time - startTime) / moveDuration;
             t = Mathf.Clamp(t, 0, 1);
-            Vector3 surfacePosition = Vector3.Lerp(startPosition, endPosition, t).normalized * 0.5f;
+            Vector3 surfacePosition = Vector3.Lerp(localStartPositionNoExtrusion, localEndPositionExtrusion, t).normalized * 0.5f;
             // clamp to surface including extrusion
             transform.localPosition = hexa.GetExtrudedPosition(surfacePosition, worldSpace: false);
 
-            // Adjust rotation so it keeps aligned to hexasphere surface
-            Vector3 lookPosition = hexa.transform.TransformPoint(endPosition);
-            Vector3 up = (transform.position - hexa.transform.position).normalized;
+            /*Vector3 up = (legsTransform.position - hexa.transform.position).normalized;
+            legsTransform.LookAt(globalEndPositionExtrusion, up);*/
 
-            transform.LookAt(lookPosition, up);
+            unitAnimator.SetBool("isMoving", true);
 
             yield return null;
         }
+        tileIndex = path[0];
         path.RemoveAt(0);
         if (path.Count > 0)
         {
