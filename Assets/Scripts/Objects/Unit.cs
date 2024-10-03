@@ -25,13 +25,13 @@ public class Unit : Object
     protected WorldPositionElement unitText;
     [SerializeField] protected List<Sprite> unitButtonImages;
     public string unitName;
-    [SerializeField] private Animator unitAnimator;
-    [SerializeField] private Transform legsTransform;
+    private Animator unitAnimator;
 
     protected void Awake()
     {
         hp = maxHp;
         rp = maxRp;
+        unitAnimator = GetComponent<Animator>();
         path = new List<int>();
         RefreshMoves();
         StartCoroutine(CreateUnitButton());
@@ -52,19 +52,21 @@ public class Unit : Object
     public IEnumerator MoveUnit() {
         Vector3 localStartPositionNoExtrusion = hexa.GetTileCenter(tileIndex, worldSpace: false, includeExtrusion: false);
         Vector3 globalStartPositionNoExtrusion = hexa.transform.TransformPoint(localStartPositionNoExtrusion);
+        Vector3 localStartPositionExtrusion = hexa.GetTileCenter(tileIndex, worldSpace: false);
+
         Vector3 localEndPositionNoExtrusion = hexa.GetTileCenter(path[0], worldSpace: false, includeExtrusion: false);
         Vector3 globalEndPositionNoExtrusion = hexa.transform.TransformPoint(localEndPositionNoExtrusion);
         Vector3 localEndPositionExtrusion = hexa.GetTileCenter(path[0], worldSpace: false);
-        Vector3 globalEndPositionExtrusion = hexa.transform.TransformPoint(localEndPositionExtrusion);
 
-        float rightDot = Vector3.Dot(legsTransform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
-        float forwardDot = Vector3.Dot(legsTransform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
+        float rightDot = Vector3.Dot(transform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
+        float forwardDot = Vector3.Dot(transform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
         float maxRightDot = 0.01f;
 
+        //Rotate towards the destination
         while (Mathf.Abs(rightDot) > maxRightDot || forwardDot < 0)
         {
-            rightDot = Vector3.Dot(legsTransform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
-            forwardDot = Vector3.Dot(legsTransform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
+            rightDot = Vector3.Dot(transform.right, globalEndPositionNoExtrusion - globalStartPositionNoExtrusion);
+            forwardDot = Vector3.Dot(transform.forward.normalized, (globalEndPositionNoExtrusion - globalStartPositionNoExtrusion).normalized);
             if (rightDot > 0)
             {
                 unitAnimator.SetBool("turnRight", true);
@@ -75,32 +77,47 @@ public class Unit : Object
                 unitAnimator.SetBool("turnLeft", true);
                 unitAnimator.SetBool("turnRight", false);
             }
+            Vector3 globalEndPositionExtrusion = hexa.GetTileCenter(path[0]);
+            Debug.DrawLine(transform.position, globalEndPositionExtrusion);
+            transform.localPosition = localStartPositionExtrusion;
+
             yield return null;
         }
 
         unitAnimator.SetBool("turnLeft", false);
         unitAnimator.SetBool("turnRight", false);
 
+        Vector3 up = (transform.position - hexa.transform.position).normalized;
+
+        //Move towards the destination
         startTime = Time.time;
         float t = 0;
+
+        Quaternion startRotation = transform.rotation;
+        Quaternion endRotation = Quaternion.LookRotation(globalEndPositionNoExtrusion - globalStartPositionNoExtrusion, up);
+
         while (t < 1f)
         {
             // Compute next position
             t = (Time.time - startTime) / moveDuration;
             t = Mathf.Clamp(t, 0, 1);
-            Vector3 surfacePosition = Vector3.Lerp(localStartPositionNoExtrusion, localEndPositionExtrusion, t).normalized * 0.5f;
+            Vector3 surfacePosition = Vector3.Lerp(localStartPositionExtrusion, localEndPositionExtrusion, t).normalized * 0.5f;
             // clamp to surface including extrusion
             transform.localPosition = hexa.GetExtrudedPosition(surfacePosition, worldSpace: false);
 
-            /*Vector3 up = (legsTransform.position - hexa.transform.position).normalized;
-            legsTransform.LookAt(globalEndPositionExtrusion, up);*/
+            transform.rotation = Quaternion.Lerp(startRotation, endRotation, t);
 
+            //Start moving animation
             unitAnimator.SetBool("isMoving", true);
 
             yield return null;
         }
+
+        transform.LookAt(hexa.GetTileCenter(path[0]), up);
+
         tileIndex = path[0];
         path.RemoveAt(0);
+
         if (path.Count > 0)
         {
             StartCoroutine(MoveUnit());
