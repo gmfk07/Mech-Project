@@ -35,14 +35,16 @@ namespace HexasphereGrid {
         int mSearchLimit = 2000;
         bool mIgnoreTileCanCross;
         int lastRouteMatrixGroupMask = -1;
+        bool lastRouteIgnoreTileCanCross = false;
 
         void ComputeRouteMatrix(int groupMask) {
 
-            if (!needRefreshRouteMatrix && lastRouteMatrixGroupMask == groupMask)
+            if (!needRefreshRouteMatrix && lastRouteMatrixGroupMask == groupMask && lastRouteIgnoreTileCanCross == mIgnoreTileCanCross)
                 return;
 
             needRefreshRouteMatrix = false;
             lastRouteMatrixGroupMask = groupMask;
+            lastRouteIgnoreTileCanCross = mIgnoreTileCanCross;
 
             // Compute route
             for (int j = 0; j < tiles.Length; j++) {

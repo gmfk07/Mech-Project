@@ -51,7 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTransform: {fileID: 0}
   UIObject: {fileID: 8450406135011376798}
-  height: 1
+  height: 4
 --- !u!1 &8450406135011376798
 GameObject:
   m_ObjectHideFlags: 0

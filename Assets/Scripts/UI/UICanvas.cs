@@ -160,9 +160,9 @@ public class UICanvas : MonoBehaviour
 
     public WorldPositionElement CreateWorldPositionText(Transform transform)
     {
-        GameObject unitButton = Instantiate(worldPositionTextPrefab, worldElementParent);
-        unitButton.GetComponent<WorldPositionElement>().targetTransform = transform;
-        return unitButton.GetComponent<WorldPositionElement>(); 
+        GameObject worldPositionText = Instantiate(worldPositionTextPrefab, worldElementParent);
+        worldPositionText.GetComponent<WorldPositionElement>().targetTransform = transform;
+        return worldPositionText.GetComponent<WorldPositionElement>(); 
     }
 
     public void SetSelectedCity(City selectedCity)

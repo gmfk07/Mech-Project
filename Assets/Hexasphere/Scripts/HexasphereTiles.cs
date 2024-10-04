@@ -86,10 +86,10 @@ namespace HexasphereGrid {
                 }
                 colorWireDirty[tile.uvWireChunkIndex] = true;
 
-                if (_smartEdges) {
+                //if (_smartEdges) {
                     needRegenerateWireframe = true;
                     shouldUpdateMaterialProperties = true;
-                }
+                //}
             }
 
             if (mat != highlightMaterial) {
@@ -418,6 +418,7 @@ namespace HexasphereGrid {
                 uvWireDirty[tile.uvWireChunkIndex] = true;
             }
             pendingUVUpdateFast = true;
+            needRegenerateWireframe = true;
             return true;
         }
 

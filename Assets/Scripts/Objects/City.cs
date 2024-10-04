@@ -18,7 +18,7 @@ public class City : Object
     private int availablePopulation = 1;
     private int totalPopulation = 1;
     private WorldPositionButton cityButton;
-    [HideInInspector] public String cityName;
+    [HideInInspector] public string cityName;
     [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
     [HideInInspector] public Nation owningNation;
 
@@ -109,5 +109,17 @@ public class City : Object
     {
         availablePopulation += delta;
         UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
+    }
+}
+
+public class Pop
+{
+    public int wealth;
+    public float comfort;
+
+    Pop(int wealth, float comfort)
+    {
+        this.wealth = wealth;
+        this.comfort = comfort;
     }
 }

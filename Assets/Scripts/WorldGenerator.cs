@@ -96,7 +96,7 @@ public class WorldGenerator : MonoBehaviour
         }
 
         List<Tile> shuffledTiles = hexa.tiles.ToList();
-        IListExtensions.Shuffle<Tile>(shuffledTiles);
+        IListExtensions.Shuffle(shuffledTiles);
         //Generate ores
         int currentMetalOres = 0;
         foreach (Tile tile in shuffledTiles)
