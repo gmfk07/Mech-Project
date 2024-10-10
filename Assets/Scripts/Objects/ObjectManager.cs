@@ -256,6 +256,7 @@ public class ObjectManager : MonoBehaviour
 
     public void HandleTileSelected(int tileIndex)
     {
+        UICanvas.instance.SetCityPanelVisible(false);
         bool currentPlayerHasUnits = playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer);
         if (targeting)
         {

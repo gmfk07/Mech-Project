@@ -8,13 +8,12 @@ using UnityEngine.UI;
 public class CitySubObject : Object
 {
     [HideInInspector] public City owningCity;
-    private WorldPositionButton citySubObjectButton;
-    private WorldPositionButton citySubObjectOccupiedButton;
+    private CitySubObjectPopPanel citySubObjectPopPanel;
     public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
     //Workaround for Unity not having dictionaries in inspector
     [SerializeField] private List<Resource> resourceProductionDictKeys;
     [SerializeField] private List<int> resourceProductionDictValues;
-    [HideInInspector] public bool worked = false;
+    [HideInInspector] public int workerIndex = -1;
 
     new void Start()
     {
@@ -23,47 +22,32 @@ public class CitySubObject : Object
         {
             resourceProductionDict.Add(resourceProductionDictKeys[i], resourceProductionDictValues[i]);
         }
-        CreateCitySubObjectButtons();
-        UpdateCitySubObjectButtonColor();
+        CreateCitySubObjectPopPanel();
     }
 
-    void CreateCitySubObjectButtons()
+    void CreateCitySubObjectPopPanel()
     {
-        citySubObjectButton = UICanvas.instance.CreateCitySubObjectButton(this);
-        SetCitySubObjectButtonActive(false);
-        citySubObjectOccupiedButton = UICanvas.instance.CreateCitySubObjectOccupiedButton(this);
-        SetCitySubObjectOccupiedButtonActive(false);
+        citySubObjectPopPanel = UICanvas.instance.CreateCitySubObjectPopPanel(this);
+        citySubObjectPopPanel.citySubObject = this;
+        SetCitySubObjectPopPanelActive(false);
     }
 
-    public void SetCitySubObjectButtonActive(bool enabled)
+    public CitySubObjectPopPanel GetCitySubObjectPopPanel()
     {
-        citySubObjectButton.gameObject.SetActive(enabled);
+        return citySubObjectPopPanel;
     }
 
-    public void SetCitySubObjectOccupiedButtonActive(bool enabled)
+    public void SetCitySubObjectPopPanelActive(bool enabled)
     {
-        citySubObjectOccupiedButton.gameObject.SetActive(enabled);
-    }
-
-    public void HandleSubObjectButtonClicked()
-    {
-        if (!worked && owningCity.HasAvailablePopulation(1))
-        {
-            StartBeingWorked();
-        }
-        else if (worked)
-        {
-            StopBeingWorked();
-        }
-        UpdateCitySubObjectButtonColor();
-        UICanvas.instance.UpdateResourceList();
+        citySubObjectPopPanel.gameObject.SetActive(enabled);
     }
 
     //Stops being worked, giving a population back to owner city and removing production.
-    private void StopBeingWorked()
+    public void StopBeingWorked()
     {
-        worked = false;
-        owningCity.ChangeAvailablePopulation(1);
+        owningCity.GetPop(workerIndex).working = null;
+        owningCity.SetPopAvailable(workerIndex, true);
+        workerIndex = -1;
         foreach (Resource resource in resourceProductionDict.Keys)
         {
             owningCity.resourceProductionDict[resource] -= resourceProductionDict[resource];
@@ -74,48 +58,27 @@ public class CitySubObject : Object
         }
     }
 
-    //Takes a population from owner City and becomes worked, adding production to owner City.
-    private void StartBeingWorked()
+    //Given a popIndex, sets this pop as working for this subobject and unavailable and updates resources
+    public void StartBeingWorked(int popIndex)
     {
-        worked = true;
-        owningCity.ChangeAvailablePopulation(-1);
-        foreach (Resource resource in resourceProductionDict.Keys)
+        owningCity.GetPop(workerIndex).working = this;
+        owningCity.SetPopAvailable(workerIndex, false);
+        workerIndex = popIndex;
+        if (owningCity.GetPop(popIndex).working == null)
         {
-            if (owningCity.resourceProductionDict.ContainsKey(resource))
+            foreach (Resource resource in resourceProductionDict.Keys)
             {
-                owningCity.resourceProductionDict[resource] += resourceProductionDict[resource];
+                if (owningCity.resourceProductionDict.ContainsKey(resource))
+                {
+                    owningCity.resourceProductionDict[resource] += resourceProductionDict[resource];
+                }
+                else
+                {
+                    owningCity.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
+                }
             }
-            else
-            {
-                owningCity.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
-            }
         }
-    }
 
-    public void HandleSubObjectOccupiedButtonClicked(City selectedCity)
-    {
-        //Add a pop back to owning city if worked
-        if (worked)
-        {
-            StopBeingWorked();
-        }
-        owningCity = selectedCity;
-        SetCitySubObjectButtonActive(true);
-        SetCitySubObjectOccupiedButtonActive(false);
-    }
-
-    public void UpdateCitySubObjectButtonColor()
-    {
-        if (worked)
-        {
-            citySubObjectButton.gameObject.GetComponentInChildren<Button>().colors = ColorBlock.defaultColorBlock;
-        }
-        else
-        {
-            ColorBlock unworkedColorBlock = ColorBlock.defaultColorBlock;
-            unworkedColorBlock.normalColor = Color.gray;
-            unworkedColorBlock.selectedColor = Color.gray;
-            citySubObjectButton.gameObject.GetComponentInChildren<Button>().colors = unworkedColorBlock;
-        }
+        UICanvas.instance.UpdateResourceList();
     }
 }

@@ -16,19 +16,19 @@ public class UICanvas : MonoBehaviour
     public static UICanvas instance;
     private Hexasphere hexa;
     [SerializeField] GameObject cityButtonPrefab;
-    [SerializeField] GameObject citySubObjectButtonPrefab;
-    [SerializeField] GameObject citySubObjectOccupiedButtonPrefab;
+    [SerializeField] GameObject citySubObjectPopPanelPrefab;
     [SerializeField] GameObject unitButtonPrefab;
     [SerializeField] GameObject worldPositionTextPrefab;
+    [SerializeField] GameObject popIconPrefab;
     [SerializeField] Image cityPanel;
     [SerializeField] UnitPanel unitPanel;
     [SerializeField] TextMeshProUGUI cityNameText;
-    [SerializeField] TextMeshProUGUI cityPopulationText;
     [SerializeField] ResourceList resourceList;
     [HideInInspector] City selectedCity;
     [SerializeField] private Button mainButton;
     private MainButtonState mainButtonState;
     [SerializeField] private Transform worldElementParent;
+    public Transform popIconParent;
 
     void Start()
     {
@@ -134,20 +134,11 @@ public class UICanvas : MonoBehaviour
         return cityButton.GetComponent<WorldPositionButton>();
     }
 
-    public WorldPositionButton CreateCitySubObjectButton(CitySubObject citySubObject)
+    public CitySubObjectPopPanel CreateCitySubObjectPopPanel(CitySubObject citySubObject)
     {
-        GameObject citySubObjectButton = Instantiate(citySubObjectButtonPrefab, worldElementParent);
-        citySubObjectButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
-        citySubObjectButton.GetComponentInChildren<Button>().onClick.AddListener(citySubObject.HandleSubObjectButtonClicked);
-        return citySubObjectButton.GetComponent<WorldPositionButton>(); 
-    }
-
-    public WorldPositionButton CreateCitySubObjectOccupiedButton(CitySubObject citySubObject)
-    {
-        GameObject citySubObjectOccupiedButton = Instantiate(citySubObjectOccupiedButtonPrefab, worldElementParent);
-        citySubObjectOccupiedButton.GetComponent<WorldPositionButton>().targetTransform = citySubObject.transform;
-        citySubObjectOccupiedButton.GetComponentInChildren<Button>().onClick.AddListener(delegate{citySubObject.HandleSubObjectOccupiedButtonClicked(selectedCity);});
-        return citySubObjectOccupiedButton.GetComponent<WorldPositionButton>(); 
+        GameObject citySubObjectButton = Instantiate(citySubObjectPopPanelPrefab, worldElementParent);
+        citySubObjectButton.GetComponent<WorldPositionElement>().targetTransform = citySubObject.transform;
+        return citySubObjectButton.GetComponent<CitySubObjectPopPanel>(); 
     }
 
     public WorldPositionButton CreateUnitButton(Unit unit)
@@ -175,7 +166,6 @@ public class UICanvas : MonoBehaviour
     {
         cityPanel.enabled = visibility;
         cityNameText.enabled = visibility;
-        cityPopulationText.enabled = visibility;
         resourceList.enabled = visibility;
         
         if (visibility)
@@ -183,10 +173,13 @@ public class UICanvas : MonoBehaviour
             ObjectManager.instance.selectedUnit = null;
             resourceList.enabled = true;
             UpdateResourceList();
+            UpdatePopDisplay();
+            ObjectManager.instance.DeselectUnit();
         }
         else
         {
             resourceList.ClearResourceDisplay();
+            ClearPopDisplay();
         }
 
         if (selectedCity != null)
@@ -195,13 +188,11 @@ public class UICanvas : MonoBehaviour
             {
                 if (citySubObject.owningCity == selectedCity)
                 {
-                    citySubObject.SetCitySubObjectButtonActive(visibility);
-                    citySubObject.SetCitySubObjectOccupiedButtonActive(false);
+                    citySubObject.SetCitySubObjectPopPanelActive(true);
                 }
                 else
                 {
-                    citySubObject.SetCitySubObjectButtonActive(false);
-                    citySubObject.SetCitySubObjectOccupiedButtonActive(visibility);
+                    citySubObject.SetCitySubObjectPopPanelActive(false);
                 }
             }
         }
@@ -222,13 +213,26 @@ public class UICanvas : MonoBehaviour
         resourceList.UpdateResourceDisplay();
     }
 
+    public void UpdatePopDisplay()
+    {
+        ClearPopDisplay();
+        for (int i=0; i < selectedCity.GetAvailablePopCount(); i++)
+        {
+            GameObject created = Instantiate(popIconPrefab, popIconParent);
+            created.GetComponent<PopIcon>().popIndex = i;
+        }
+    }
+
+    public void ClearPopDisplay()
+    {
+        foreach (Transform child in popIconParent.transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
     public void UpdateUnitInfo()
     {
         unitPanel.UpdateUnitInfo();
-    }
-
-    public void SetCityPopulationText(int availablePopulation, int totalPopulation)
-    {
-        cityPopulationText.text = "Pop: " + availablePopulation.ToString() + "/" + totalPopulation.ToString();
     }
 }

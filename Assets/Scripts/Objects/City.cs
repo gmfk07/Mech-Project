@@ -15,8 +15,8 @@ public class City : Object
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
     //Contains all subobjects in borders, not just those assigned to the city. For that, check the subObjects' owner
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
-    private int availablePopulation = 1;
-    private int totalPopulation = 1;
+    private List<Pop> pops = new List<Pop>() { new Pop(1, 1) };
+    private List<int> availablePopIndices = new List<int> { 0 };
     private WorldPositionButton cityButton;
     [HideInInspector] public string cityName;
     [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
@@ -30,7 +30,6 @@ public class City : Object
         waterBorderMaterial = owningNation.waterBorderMaterial;
         PaintBorders();
         StartCoroutine(CreateCityButton());
-        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
         citySubObjects = ObjectManager.instance.GetSubObjectsInCityBorders(this);
     }
 
@@ -97,18 +96,29 @@ public class City : Object
         hexa.FlyTo(tileIndex, 0.5f);
         UICanvas.instance.SetSelectedCity(this);
         UICanvas.instance.SetCityPanelVisible(true);
-        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
     }
 
-    public bool HasAvailablePopulation(int amount=1)
+    //Sets a pop to be available for city use or occupied.
+    public void SetPopAvailable(int index, bool available)
     {
-        return availablePopulation >= amount;
+        if (available && availablePopIndices.Contains(index))
+        {
+            availablePopIndices.Remove(index);
+        }
+        else if (!availablePopIndices.Contains(index))
+        {
+            availablePopIndices.Add(index);
+        }
     }
 
-    public void ChangeAvailablePopulation(int delta)
+    public int GetAvailablePopCount()
     {
-        availablePopulation += delta;
-        UICanvas.instance.SetCityPopulationText(availablePopulation, totalPopulation);
+        return availablePopIndices.Count;
+    }
+
+    public Pop GetPop(int index)
+    {
+        return pops[index];
     }
 }
 
@@ -116,8 +126,9 @@ public class Pop
 {
     public int wealth;
     public float comfort;
+    public CitySubObject working = null;
 
-    Pop(int wealth, float comfort)
+    public Pop(int wealth, float comfort)
     {
         this.wealth = wealth;
         this.comfort = comfort;
