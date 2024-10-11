@@ -175,22 +175,29 @@ public class UICanvas : MonoBehaviour
             UpdateResourceList();
             UpdatePopDisplay();
             ObjectManager.instance.DeselectUnit();
+
+            if (selectedCity != null)
+            {
+                foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
+                {
+                    if (citySubObject.owningCity == selectedCity)
+                    {
+                        citySubObject.SetCitySubObjectPopPanelActive(true);
+                    }
+                    else
+                    {
+                        citySubObject.SetCitySubObjectPopPanelActive(false);
+                    }
+                }
+            }
         }
         else
         {
             resourceList.ClearResourceDisplay();
             ClearPopDisplay();
-        }
-
-        if (selectedCity != null)
-        {
-            foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
+            if (selectedCity != null)
             {
-                if (citySubObject.owningCity == selectedCity)
-                {
-                    citySubObject.SetCitySubObjectPopPanelActive(true);
-                }
-                else
+                foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
                 {
                     citySubObject.SetCitySubObjectPopPanelActive(false);
                 }
@@ -218,8 +225,12 @@ public class UICanvas : MonoBehaviour
         ClearPopDisplay();
         for (int i=0; i < selectedCity.GetAvailablePopCount(); i++)
         {
-            GameObject created = Instantiate(popIconPrefab, popIconParent);
-            created.GetComponent<PopIcon>().popIndex = i;
+            if (selectedCity.GetPop(i).working == null)
+            {
+                GameObject created = Instantiate(popIconPrefab, popIconParent);
+                created.GetComponent<PopIcon>().popIndex = i;
+                created.GetComponent<PopIcon>().owningCity = selectedCity;
+            }
         }
     }
 

@@ -8,7 +8,7 @@ public class PopIcon : MonoBehaviour
     [HideInInspector] public City owningCity;
     [HideInInspector] public CitySubObjectPopPanel currentPopPanel;
 
-    public void OnLeftMouseReleased()
+    public void OnEndDrag()
     {
         CitySubObject currentWorkedSubObject = owningCity.GetPop(popIndex).working;
         if (currentPopPanel != null)
@@ -36,6 +36,7 @@ public class PopIcon : MonoBehaviour
 
             currentPopPanelSubObject.StartBeingWorked(popIndex);
             transform.SetParent(currentPopPanel.transform);
+            transform.localPosition = Vector3.zero;
         }
         else
         {

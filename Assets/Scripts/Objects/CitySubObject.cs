@@ -56,26 +56,25 @@ public class CitySubObject : Object
                 owningCity.resourceProductionDict.Remove(resource);
             }
         }
+        UICanvas.instance.UpdateResourceList();
     }
 
     //Given a popIndex, sets this pop as working for this subobject and unavailable and updates resources
     public void StartBeingWorked(int popIndex)
     {
-        owningCity.GetPop(workerIndex).working = this;
-        owningCity.SetPopAvailable(workerIndex, false);
+        owningCity.GetPop(popIndex).working = this;
+        owningCity.SetPopAvailable(popIndex, false);
         workerIndex = popIndex;
-        if (owningCity.GetPop(popIndex).working == null)
+
+        foreach (Resource resource in resourceProductionDict.Keys)
         {
-            foreach (Resource resource in resourceProductionDict.Keys)
+            if (owningCity.resourceProductionDict.ContainsKey(resource))
             {
-                if (owningCity.resourceProductionDict.ContainsKey(resource))
-                {
-                    owningCity.resourceProductionDict[resource] += resourceProductionDict[resource];
-                }
-                else
-                {
-                    owningCity.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
-                }
+                owningCity.resourceProductionDict[resource] += resourceProductionDict[resource];
+            }
+            else
+            {
+                owningCity.resourceProductionDict.Add(resource, resourceProductionDict[resource]);
             }
         }
 
