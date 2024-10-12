@@ -4,6 +4,9 @@ using UnityEngine;
 using HexasphereGrid;
 using Unity.PlasticSCM.Editor.WebApi;
 using System.Linq;
+using Unity.VisualScripting;
+using System.IO;
+using System;
 
 enum PaintMode { None, BuilderUnit, BattlerUnit, City }
 
@@ -39,7 +42,7 @@ public class ObjectManager : MonoBehaviour
         hexa.OnTileClick += TileClick;
         hexa.OnTileRightClick += TileRightClick;
         hexa.OnTileMouseOver += TileMouseOver;
-        hexa.OnPathFindingCrossTile += PathFindingCrossTile;
+        hexa.OnPathFindingCrossTile += PathFindingCrossTileMoving;
     }
 
     void OnGUI()
@@ -109,7 +112,7 @@ public class ObjectManager : MonoBehaviour
             if (path != null && path.Count > 0)
             {
                 path.Insert(0, selectedUnit.tileIndex);
-                if (CalculatePathLength(hexa, path) > selectedUnit.remainingMoves)
+                if (CalculatePathLength(hexa, path, true) > selectedUnit.remainingMoves)
                 {
                     hexa.SetTileColor(path, Color.red, true);
                 }
@@ -123,7 +126,7 @@ public class ObjectManager : MonoBehaviour
                         }
                         else
                         {
-                            int tileCrossCost = (int) PathFindingCrossTile(hexa, path[i], path[i-1]);
+                            int tileCrossCost = (int) PathFindingCrossTileMoving(hexa, path[i], path[i-1]);
                             if (tileCrossCost == 1)
                             {
                                 hexa.SetTileColor(path[i], Color.white, true);
@@ -135,6 +138,26 @@ public class ObjectManager : MonoBehaviour
                         }
                     }
                 }
+            }
+        }
+        else if (targeting)
+        {
+            hexa.highlightEnabled = false;
+            hexa.OnPathFindingCrossTile -= PathFindingCrossTileMoving;
+            List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, true);
+            if (path != null)
+            {
+                BattlerUnit selectedBattlerUnit = (BattlerUnit) selectedUnit;
+                int pathLength = (int) CalculatePathLength(hexa, path, false);
+                if (pathLength < selectedBattlerUnit.selectedWeapon.minRange || pathLength > selectedWeapon.maxRange)
+                {
+                    hexa.SetTileColor(path, Color.red, true);
+                }
+                else
+                {
+                    hexa.SetTileColor(path, Color.white, true);
+                }
+                hexa.OnPathFindingCrossTile += PathFindingCrossTileMoving;
             }
         }
     }
@@ -165,7 +188,7 @@ public class ObjectManager : MonoBehaviour
                 // Parent it to hexasphere, so it rotates along it
                 unit.transform.SetParent(hexa.transform);
 
-                // Position capsule on top of tile
+                // Position unit on top of tile
                 unit.transform.position = hexa.GetTileCenter(tileIndex);
 
                 hexa.FlyTo(tileIndex, 0.5f);
@@ -226,8 +249,11 @@ public class ObjectManager : MonoBehaviour
 
     void TileRightClick(Hexasphere hexa, int tileIndex)
     {
-        StopTargeting();
-        if (selectedUnit != null && !selectedUnit.IsMoving() && !tileUnitDict.ContainsKey(tileIndex))
+        if (targeting)
+        {
+            StopTargeting();
+        }
+        else if (selectedUnit != null && !selectedUnit.IsMoving() && !tileUnitDict.ContainsKey(tileIndex))
         {
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, false);
             if (path != null && path.Count > 0 && path.Count <= selectedUnit.remainingMoves)
@@ -285,7 +311,7 @@ public class ObjectManager : MonoBehaviour
         hexa.FlyTo(tileIndex, 0.5f);
     }
 
-    float PathFindingCrossTile(Hexasphere hexa, int toTileIndex, int fromTileIndex)
+    float PathFindingCrossTileMoving(Hexasphere hexa, int toTileIndex, int fromTileIndex)
     {
         if (Mathf.Abs(hexa.GetTileExtrudeAmount(toTileIndex) - hexa.GetTileExtrudeAmount(fromTileIndex)) > heightDifferenceMoveLimit)
         {
@@ -297,14 +323,22 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-    float CalculatePathLength(Hexasphere hexa, List<int> path)
+    //Calculates the length of a path. If moving is true, uses PathFindingCrossTileMoving
+    float CalculatePathLength(Hexasphere hexa, List<int> path, bool moving)
     {
+        if (!moving)
+        {
+            return path.Count;
+        }
         float length = 0;
         for (int i=0; i<path.Count; i++)
         {
             if (i > 0)
             {
-                length += PathFindingCrossTile(hexa, path[i], path[i-1]);
+                if (moving)
+                {
+                    length += PathFindingCrossTileMoving(hexa, path[i], path[i-1]);
+                }
             }
         }
         return length;
@@ -334,5 +368,13 @@ public class ObjectManager : MonoBehaviour
     {
         selectedUnit = null;
         UICanvas.instance.HandleUnitDeselected();
+    }
+
+    //Removes all references to a unit about to be destroyed from ObjectManager.
+    public void HandleUnitDestroyed(Unit destroyedUnit)
+    {
+        int tile = destroyedUnit.tileIndex;
+        tileUnitDict.Remove(tile);
+        playerUnitDict[destroyedUnit.owningNation.player].Remove(destroyedUnit);
     }
 }

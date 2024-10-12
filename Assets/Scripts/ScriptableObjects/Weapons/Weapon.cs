@@ -9,4 +9,6 @@ public class Weapon : ScriptableObject
     public int accuracyMod;
     public int damageDice;
     public int damageMod;
+    public int minRange;
+    public int maxRange;
 }

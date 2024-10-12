@@ -25,7 +25,7 @@ public class Unit : Object
     protected WorldPositionElement unitText;
     [SerializeField] protected List<Sprite> unitButtonImages;
     public string unitName;
-    private Animator unitAnimator;
+    protected Animator unitAnimator;
 
     protected void Awake()
     {
@@ -77,8 +77,6 @@ public class Unit : Object
                 unitAnimator.SetBool("turnLeft", true);
                 unitAnimator.SetBool("turnRight", false);
             }
-            Vector3 globalEndPositionExtrusion = hexa.GetTileCenter(path[0]);
-            Debug.DrawLine(transform.position, globalEndPositionExtrusion);
             transform.localPosition = localStartPositionExtrusion;
 
             yield return null;
@@ -133,7 +131,7 @@ public class Unit : Object
         hp = Math.Max(0, hp - damage);
         if (hp == 0)
         {
-            Destroy(this);
+            DestroyUnit();
         }
     }
 
@@ -167,5 +165,14 @@ public class Unit : Object
     public void SetUnitTextVisibility(bool visibility)
     {
         unitText.SetVisibility(visibility);
+    }
+
+    //Destroys the unit and its associated UI objects.
+    public void DestroyUnit()
+    {
+        ObjectManager.instance.HandleUnitDestroyed(this);
+        Destroy(unitButton.gameObject);
+        Destroy(unitText.gameObject);
+        Destroy(gameObject);
     }
 }

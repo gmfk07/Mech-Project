@@ -16,3 +16,5 @@ MonoBehaviour:
   accuracyMod: 2
   damageDice: 1
   damageMod: 2
+  minRange: 2
+  maxRange: 5

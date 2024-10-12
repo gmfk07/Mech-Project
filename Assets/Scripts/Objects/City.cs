@@ -101,11 +101,11 @@ public class City : Object
     //Sets a pop to be available for city use or occupied.
     public void SetPopAvailable(int index, bool available)
     {
-        if (available && availablePopIndices.Contains(index))
+        if (!available && availablePopIndices.Contains(index))
         {
             availablePopIndices.Remove(index);
         }
-        else if (!availablePopIndices.Contains(index))
+        else if (available && !availablePopIndices.Contains(index))
         {
             availablePopIndices.Add(index);
         }
