@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HexasphereGrid;
+using TMPro;
 using UnityEngine;
 
 public class BattlerUnit : Unit
@@ -22,29 +24,21 @@ public class BattlerUnit : Unit
         int result = 0;
         for (int i=0; i<amount; i++)
         {
-            result += Random.Range(1, 6);
+            result += UnityEngine.Random.Range(1, 6);
         }
         return result;
     }
 
     //Launch an attack against given targets using selectedWeapon.
-    public void AttackTargets(List<Unit> targetUnits)
+    public IEnumerator AttackTargets(List<Unit> targetUnits)
     {
         foreach (Unit unit in targetUnits)
         {
-            if (RollD6(2 + selectedWeapon.accuracyDice) + selectedWeapon.accuracyMod >= unit.evasionTarget)
-            {
-                //weapon hit
-                unit.TakeDamage(RollD6(selectedWeapon.damageDice) + selectedWeapon.damageMod);
-            }
-            else
-            {
-                //weapon miss
-            }
+            yield return StartCoroutine(Shoot(unit.tileIndex, unit));
         }
     }
 
-    public IEnumerator Shoot(int targetTileIndex)
+    public IEnumerator Shoot(int targetTileIndex, Unit targetUnit)
     {
         Vector3 localStartPositionNoExtrusion = hexa.GetTileCenter(tileIndex, worldSpace: false, includeExtrusion: false);
         Vector3 globalStartPositionNoExtrusion = hexa.transform.TransformPoint(localStartPositionNoExtrusion);
@@ -83,5 +77,54 @@ public class BattlerUnit : Unit
         {
             animator.SetBool("shooting", true);
         }
+
+        float startTime = Time.time;
+        float t = 0;
+
+        bool attackFired = false;
+        float attackFiredTime = 0.25f;
+        while (t < 1f)
+        {
+            t = (Time.time - startTime) / selectedWeapon.shootDuration;
+            if (!attackFired && t >= attackFiredTime)
+            {
+                MakeAttack(targetUnit);
+                attackFired = true;
+            }
+            yield return null;
+        }
+
+        foreach (Animator animator in weaponAnimators)
+        {
+            animator.SetBool("shooting", false);
+        }
+    }
+    
+    //Rolls an attack and potentially damages a unit based on selectedWeapon's stats
+    public void MakeAttack(Unit targetUnit)
+    {
+        int attackRoll = RollD6(2 + selectedWeapon.accuracyDice) + selectedWeapon.accuracyMod;
+        StartCoroutine(DisplayAttackText(attackRoll));
+        if (attackRoll >= targetUnit.evasionTarget)
+        {
+            //weapon hit
+            targetUnit.TakeDamage(RollD6(selectedWeapon.damageDice) + selectedWeapon.damageMod);
+        }
+        else
+        {
+            //weapon miss
+        }
+    }
+
+    IEnumerator DisplayAttackText(int attackRoll)
+    {
+        SetUnitTargetTextVisibility(true);
+        TextMeshProUGUI tmp = unitTargetText.GetComponent<WorldPositionElement>().UIObject.GetComponent<TextMeshProUGUI>();
+        tmp.text = attackRoll.ToString();
+
+        yield return new WaitForSeconds(2);
+
+        SetUnitTargetTextVisibility(false);
+        tmp.text = evasionTarget.ToString();
     }
 }

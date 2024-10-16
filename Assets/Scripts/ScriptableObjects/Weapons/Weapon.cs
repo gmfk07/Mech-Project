@@ -11,4 +11,5 @@ public class Weapon : ScriptableObject
     public int damageMod;
     public int minRange;
     public int maxRange;
+    public float shootDuration;
 }

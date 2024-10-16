@@ -62,8 +62,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: f2b59717a97110b409b32ceb0768e200, type: 3}
   - {fileID: 21300000, guid: bab9e473f6fe94246b5359d9d7cce805, type: 3}
   unitName: Builder
-  unitAnimator: {fileID: 0}
-  legsTransform: {fileID: 0}
+  deathTime: 2
   metalMinePrefab: {fileID: 2641466471201932237, guid: 3cda65ea0609ca1448f2f3164acf3667, type: 3}
   rareEarthMinePrefab: {fileID: 2641466471201932237, guid: 9af4ee85d8016b548b076530531d6070, type: 3}
 --- !u!95 &5484355655605543963

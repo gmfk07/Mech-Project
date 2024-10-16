@@ -18,3 +18,4 @@ MonoBehaviour:
   damageMod: 2
   minRange: 2
   maxRange: 5
+  shootDuration: 1

@@ -22,10 +22,13 @@ public class Unit : Object
     public int evasionTarget;
     public Nation owningNation;
     protected WorldPositionButton unitButton;
-    protected WorldPositionElement unitText;
+    protected WorldPositionElement unitTargetText;
+    protected WorldPositionElement unitDamageText;
     [SerializeField] protected List<Sprite> unitButtonImages;
     public string unitName;
     protected Animator unitAnimator;
+    [SerializeField] float damageTime = 2;
+    [SerializeField] float deathTime = 2;
 
     protected void Awake()
     {
@@ -129,9 +132,10 @@ public class Unit : Object
     public void TakeDamage(int damage)
     {
         hp = Math.Max(0, hp - damage);
+        StartCoroutine(DisplayDamageText(damage));
         if (hp == 0)
         {
-            DestroyUnit();
+            StartCoroutine(Die());
         }
     }
 
@@ -156,15 +160,45 @@ public class Unit : Object
         {
             yield return null;
         }
-        unitText = UICanvas.instance.CreateWorldPositionText(transform);
-        unitText.GetComponentInChildren<TextMeshProUGUI>().text = evasionTarget.ToString();
-        SetUnitTextVisibility(false);
-        unitText.GetComponentInChildren<TextMeshProUGUI>().raycastTarget = false;
+        unitTargetText = UICanvas.instance.CreateWorldPositionText(transform);
+        unitTargetText.GetComponentInChildren<TextMeshProUGUI>().text = evasionTarget.ToString();
+        SetUnitTargetTextVisibility(false);
+        unitTargetText.GetComponentInChildren<TextMeshProUGUI>().raycastTarget = false;
+
+        unitDamageText = UICanvas.instance.CreateWorldPositionText(transform);
+        unitDamageText.GetComponentInChildren<TextMeshProUGUI>().text = evasionTarget.ToString();
+        unitDamageText.GetComponentInChildren<TextMeshProUGUI>().color = Color.red;
+        unitDamageText.SetScreenOffset(new Vector3(0, 30, 0));
+        SetUnitDamageTextVisibility(false);
+        unitTargetText.GetComponentInChildren<TextMeshProUGUI>().raycastTarget = false;
     }
 
-    public void SetUnitTextVisibility(bool visibility)
+    public void SetUnitTargetTextVisibility(bool visibility)
     {
-        unitText.SetVisibility(visibility);
+        unitTargetText.SetVisibility(visibility);
+    }
+
+    public void SetUnitDamageTextVisibility(bool visibility)
+    {
+        unitDamageText.SetVisibility(visibility);
+    }
+
+    IEnumerator DisplayDamageText(int damage)
+    {
+        SetUnitDamageTextVisibility(true);
+        TextMeshProUGUI tmp = unitDamageText.GetComponent<WorldPositionElement>().UIObject.GetComponent<TextMeshProUGUI>();
+        tmp.text = damage.ToString() + " DMG";
+
+        yield return new WaitForSeconds(damageTime);
+
+        SetUnitDamageTextVisibility(false);
+    }
+
+    //Animates death, waits, and destroys the unit.
+    public IEnumerator Die()
+    {
+        yield return new WaitForSeconds(deathTime);
+        DestroyUnit();
     }
 
     //Destroys the unit and its associated UI objects.
@@ -172,7 +206,8 @@ public class Unit : Object
     {
         ObjectManager.instance.HandleUnitDestroyed(this);
         Destroy(unitButton.gameObject);
-        Destroy(unitText.gameObject);
+        Destroy(unitTargetText.gameObject);
+        Destroy(unitDamageText.gameObject);
         Destroy(gameObject);
     }
 }

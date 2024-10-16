@@ -78,11 +78,11 @@ public class ObjectManager : MonoBehaviour
             //Only display unitText if the current player doesn't own the unit
             if (playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer))
             {
-                unit.SetUnitTextVisibility(!playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit));
+                unit.SetUnitTargetTextVisibility(!playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit));
             }
             else
             {
-                unit.SetUnitTextVisibility(true);
+                unit.SetUnitTargetTextVisibility(true);
             }
         }
     }
@@ -290,7 +290,7 @@ public class ObjectManager : MonoBehaviour
             {
                 Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
                 BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
-                attackerUnit.AttackTargets(new List<Unit>() { targetUnit });
+                StartCoroutine(attackerUnit.AttackTargets(new List<Unit>() { targetUnit }));
             }
             StopTargeting();
         }
