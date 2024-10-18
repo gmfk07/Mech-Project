@@ -244,6 +244,6 @@ public class UICanvas : MonoBehaviour
 
     public void UpdateUnitInfo()
     {
-        unitPanel.UpdateUnitInfo();
+        unitPanel.UpdateUnitPanel();
     }
 }

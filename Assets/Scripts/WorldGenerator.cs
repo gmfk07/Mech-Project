@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 using System.Linq;
 using System.Globalization;
 
+public enum Deposit {None, MetalOre, RareEarthOre}
+
 public class WorldGenerator : MonoBehaviour
 {
     public static WorldGenerator instance;
@@ -25,8 +27,7 @@ public class WorldGenerator : MonoBehaviour
     [HideInInspector] public List<int> waterTiles;
     [HideInInspector] public List<int> iceTiles;
     [HideInInspector] public List<int> forestTiles;
-    [HideInInspector] public List<int> metalOreTiles;
-    [HideInInspector] public List<int> rareEarthOreTiles;
+    [HideInInspector] public List<Deposit> deposits;
     [HideInInspector] public int northPoleTile;
     [HideInInspector] public int southPoleTile;
     [SerializeField] private Texture2D grassTexture;
@@ -42,7 +43,7 @@ public class WorldGenerator : MonoBehaviour
         FastNoiseLite noise = new FastNoiseLite();
         noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
 
-        //Generate tile height
+        //Generate tile height, initialize deposits
         foreach (Tile tile in hexa.tiles)
         {
             Vector2 LatLon = hexa.GetTileLatLon(tile.index);
@@ -61,6 +62,7 @@ public class WorldGenerator : MonoBehaviour
                 hexa.SetTileTexture(tile.index, grassTexture);
                 hexa.SetTileMaterial(tile.index, groundMaterial);
             }
+            deposits.Add(Deposit.None);
         }
 
         //Generate poles
@@ -105,7 +107,7 @@ public class WorldGenerator : MonoBehaviour
             {
                 // Create the tile prefab
                 GameObject oreObject = Instantiate(metalOrePrefab);
-                metalOreTiles.Add(tile.index);
+                deposits[tile.index] = Deposit.MetalOre;
 
                 // Parent it to hexasphere, so it rotates along it
                 oreObject.transform.SetParent(hexa.transform);
@@ -122,11 +124,11 @@ public class WorldGenerator : MonoBehaviour
         int currentRareEarthOres = 0;
         foreach (Tile tile in shuffledTiles)
         {
-            if (currentRareEarthOres <= rareEarthOreCount && !metalOreTiles.Contains(tile.index) && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
+            if (currentRareEarthOres <= rareEarthOreCount && deposits[tile.index] == Deposit.None && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index))
             {
                 // Create the tile prefab
                 GameObject oreObject = Instantiate(rareEarthOrePrefab);
-                rareEarthOreTiles.Add(tile.index);
+                deposits[tile.index] = Deposit.RareEarthOre;
 
                 // Parent it to hexasphere, so it rotates along it
                 oreObject.transform.SetParent(hexa.transform);
@@ -148,7 +150,7 @@ public class WorldGenerator : MonoBehaviour
         {
             Vector2 LatLon = hexa.GetTileLatLon(tile.index);
             float sample = noise.GetNoise(LatLon.x + noiseOffsetX, LatLon.y + noiseOffsetY);
-            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index) && !metalOreTiles.Contains(tile.index) && !rareEarthOreTiles.Contains(tile.index))
+            if (sample <= forestCutoff && !waterTiles.Contains(tile.index) && !iceTiles.Contains(tile.index) && deposits[tile.index] == Deposit.None)
             {
                 // Create the tile prefab
                 GameObject forestObject = Instantiate(forestPrefab);

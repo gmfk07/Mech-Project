@@ -62,6 +62,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 26a31d1a8df6ab34aa0ac6e63d76fffe, type: 3}
   - {fileID: 21300000, guid: 821518534b1947940a2ffbffba31a492, type: 3}
   unitName: Colossus
+  damageTime: 2
   deathTime: 2
   hardpoints: 2
   weaponList:
@@ -72,7 +73,7 @@ MonoBehaviour:
   - {fileID: 5088994624302802536}
 --- !u!95 &4377919996479597826
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -86,6 +87,7 @@ Animator:
   m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -682,6 +684,9 @@ SkinnedMeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 3
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -889,6 +894,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100008, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3039736325385208262}
     - targetCorrespondingSourceObject: {fileID: 100000, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 336733884645561544}
@@ -896,6 +904,24 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2579466593901938126}
   m_SourcePrefab: {fileID: 100100000, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
+--- !u!1 &3363065851102669492 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100008, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
+  m_PrefabInstance: {fileID: 3363065851102702620}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3039736325385208262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3363065851102669492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ceaece40dadedf4abf6615d51293fc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  givenParticleSystem: {fileID: 2579466593901938126}
 --- !u!1 &3363065851102669500 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 47ab3f4905a084041b4e3588ae8f4b8b, type: 3}
@@ -919,10 +945,13 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd9b34b21c17c164c9c418c4f4b5ea00, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5897,7 +5926,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 1
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -10621,10 +10650,13 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd9b34b21c17c164c9c418c4f4b5ea00, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10664,7 +10696,7 @@ ParticleSystemRenderer:
   m_AllowRoll: 1
   m_FreeformStretching: 0
   m_RotateWithStretchDirection: 1
-  m_UseCustomVertexStreams: 0
+  m_UseCustomVertexStreams: 1
   m_VertexStreams: 00010304
   m_UseCustomTrailVertexStreams: 0
   m_TrailVertexStreams: 00010304
