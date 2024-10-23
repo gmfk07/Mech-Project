@@ -9,9 +9,11 @@ public class UnitPanel : MonoBehaviour
     [SerializeField] private GameObject skipButtonPrefab;
     [SerializeField] private GameObject weaponButtonPrefab;
     [SerializeField] private GameObject buildButtonPrefab;
+    [SerializeField] private GameObject pushReactorButtonPrefab;
     private List<GameObject> createdWeaponButtons = new List<GameObject>();
     private List<GameObject> createdBuildButtons = new List<GameObject>();
     private GameObject createdSkipButton;
+    private GameObject createdPushReactorButton;
 
     public void CreateButtons()
     {
@@ -20,6 +22,16 @@ public class UnitPanel : MonoBehaviour
 
         createdSkipButton = Instantiate(skipButtonPrefab, transform);
         createdSkipButton.GetComponent<SkipButton>().SetVisibility(true);
+
+        if (ObjectManager.instance.selectedUnit.hasActed)
+        {
+            if (ObjectManager.instance.selectedUnit.rp > 0)
+            {
+                createdPushReactorButton = Instantiate(pushReactorButtonPrefab, transform);
+                createdPushReactorButton.GetComponent<PushReactorButton>().SetVisibility(true);
+            }
+            return;
+        }
 
         if (battlerUnit)
         {
@@ -84,6 +96,10 @@ public class UnitPanel : MonoBehaviour
         if (createdSkipButton)
         {
             Destroy(createdSkipButton);
+        }
+        if (createdPushReactorButton)
+        {
+            Destroy(createdPushReactorButton);
         }
     }
 

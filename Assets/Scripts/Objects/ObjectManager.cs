@@ -72,7 +72,7 @@ public class ObjectManager : MonoBehaviour
         {
             if (playerUnitDict.ContainsKey(TurnManager.instance.currentPlayer) && playerUnitDict[TurnManager.instance.currentPlayer].Contains(unit))
             {
-                unit.RefreshMoves();
+                unit.RefreshActions();
             }
 
             //Only display unitText if the current player doesn't own the unit
@@ -145,6 +145,7 @@ public class ObjectManager : MonoBehaviour
             hexa.highlightEnabled = false;
             hexa.OnPathFindingCrossTile -= PathFindingCrossTileMoving;
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, true);
+            path.Insert(0, selectedUnit.tileIndex);
             if (path != null)
             {
                 BattlerUnit selectedBattlerUnit = (BattlerUnit) selectedUnit;
@@ -256,26 +257,36 @@ public class ObjectManager : MonoBehaviour
         else if (selectedUnit != null && !selectedUnit.IsMoving() && !tileUnitDict.ContainsKey(tileIndex))
         {
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, false);
-            if (path != null && path.Count > 0 && path.Count <= selectedUnit.remainingMoves)
+            
+            if (path != null && path.Count > 0)
             {
-                //Path is valid and within range
-                selectedUnit.path = path;
-                selectedUnit.StopAllCoroutines();
-                selectedUnit.StartCoroutine(selectedUnit.MoveUnit());
+                List<int> pathWithStartingTile = new List<int>(path);
+                pathWithStartingTile.Insert(0, selectedUnit.tileIndex);
 
-                tileUnitDict.Remove(selectedUnit.tileIndex);
-                selectedUnit.tileIndex = tileIndex;
-                tileUnitDict[tileIndex] = selectedUnit;
-
-                selectedUnit.remainingMoves -= path.Count;
-                if (selectedUnit.remainingMoves == 0)
+                if (CalculatePathLength(hexa, pathWithStartingTile, true) <= selectedUnit.remainingMoves)
                 {
-                    selectedUnit.active = false;
-                    UICanvas.instance.UpdateMainButton();
-                }
-                UICanvas.instance.UpdateUnitInfo();
+                    //Path is valid and within range
+                    selectedUnit.path = path;
+                    selectedUnit.StopAllCoroutines();
+                    selectedUnit.StartCoroutine(selectedUnit.MoveUnit());
 
-                hexa.FlyTo(tileIndex, 0.5f);
+                    tileUnitDict.Remove(selectedUnit.tileIndex);
+                    selectedUnit.tileIndex = tileIndex;
+                    tileUnitDict[tileIndex] = selectedUnit;
+
+                    selectedUnit.remainingMoves -= (int) CalculatePathLength(hexa, pathWithStartingTile, true);
+                    if (selectedUnit.remainingMoves == 0)
+                    {
+                        if (selectedUnit.hasActed)
+                        {
+                            selectedUnit.active = false;
+                            UICanvas.instance.UpdateMainButton();
+                        }
+                    }
+                    UICanvas.instance.UpdateUnitPanel();
+
+                    hexa.FlyTo(tileIndex, 0.5f);
+                }
             }
         }
     }
@@ -291,6 +302,7 @@ public class ObjectManager : MonoBehaviour
                 Unit targetUnit = tileUnitDict[tileIndex].GetComponent<Unit>();
                 BattlerUnit attackerUnit = (BattlerUnit)selectedUnit;
                 StartCoroutine(attackerUnit.AttackTargets(new List<Unit>() { targetUnit }));
+                attackerUnit.HandleActionPerformed();
             }
             StopTargeting();
         }
@@ -323,7 +335,7 @@ public class ObjectManager : MonoBehaviour
         }
     }
 
-    //Calculates the length of a path. If moving is true, uses PathFindingCrossTileMoving
+    //Calculates the length of a path, assuming the starting tile is index 0. If moving is true, uses PathFindingCrossTileMoving for tile costs
     float CalculatePathLength(Hexasphere hexa, List<int> path, bool moving)
     {
         if (!moving)
@@ -362,6 +374,14 @@ public class ObjectManager : MonoBehaviour
         selectedUnit.active = false;
         UICanvas.instance.UpdateMainButton();
         DeselectUnit();
+    }
+
+    public void PushSelectedUnitReactor()
+    {
+        selectedUnit.hasActed = false;
+        selectedUnit.remainingMoves = selectedUnit.moveRange;
+        selectedUnit.rp = Mathf.Max(0, selectedUnit.rp - selectedUnit.pushReactorCost);
+        UICanvas.instance.UpdateUnitPanel();
     }
 
     public void DeselectUnit()

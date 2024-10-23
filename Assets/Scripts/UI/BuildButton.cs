@@ -19,5 +19,6 @@ public class BuildButton : UIButton
     {
         BuilderUnit builderUnit = (BuilderUnit) ObjectManager.instance.selectedUnit;
         builderUnit.BuildSubObject(building.citySubObjectPrefab);
+        builderUnit.HandleActionPerformed();
     }
 }

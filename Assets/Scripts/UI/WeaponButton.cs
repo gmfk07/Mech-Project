@@ -14,7 +14,7 @@ public class WeaponButton : UIButton
     {
         string accuracyDiceString = (2 + weapon.accuracyDice) + "D6";
         string accuracyModString = weapon.accuracyMod == 0 ? "" : "+" + weapon.accuracyMod;
-        string damageDiceString = (weapon.damageDice) + "D6";
+        string damageDiceString = weapon.damageDice + "D6";
         string damageModString = weapon.damageMod == 0 ? "" : "+" + weapon.damageMod;
         buttonText.text = weapon.name + "\nACC: " + accuracyDiceString + accuracyModString + "\nDMG: " + damageDiceString + damageModString;
     }

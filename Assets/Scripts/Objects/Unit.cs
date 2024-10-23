@@ -14,12 +14,16 @@ public class Unit : Object
     float startTime;
     public int moveRange;
     [HideInInspector] public int remainingMoves;
+    //Whether or not this unit has anything they can do (move or act) on this turn
     [HideInInspector] public bool active = true;
+    //Whether or not this unit has taken an action (shoot or build) on this turn
+    public bool hasActed = false;
     [HideInInspector] public int hp;
     public int maxHp;
     [HideInInspector] public int rp;
     public int maxRp;
     public int evasionTarget;
+    public int pushReactorCost;
     public Nation owningNation;
     protected WorldPositionButton unitButton;
     protected WorldPositionElement unitTargetText;
@@ -36,15 +40,17 @@ public class Unit : Object
         rp = maxRp;
         unitAnimator = GetComponent<Animator>();
         path = new List<int>();
-        RefreshMoves();
+        RefreshActions();
         StartCoroutine(CreateUnitButton());
         StartCoroutine(CreateUnitText());
     }
 
-    public void RefreshMoves()
+    public void RefreshActions()
     {
         remainingMoves = moveRange;
         active = true;
+        hasActed = false;
+        pushReactorCost = 1;
     }
 
     public bool IsMoving()
@@ -209,5 +215,16 @@ public class Unit : Object
         Destroy(unitTargetText.gameObject);
         Destroy(unitDamageText.gameObject);
         Destroy(gameObject);
+    }
+
+    public void HandleActionPerformed()
+    {
+        hasActed = true;
+        UICanvas.instance.UpdateUnitPanel();
+        if (remainingMoves == 0)
+        {
+            active = false;
+            UICanvas.instance.UpdateMainButton();
+        }
     }
 }
