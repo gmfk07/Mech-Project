@@ -5,16 +5,16 @@ using HexasphereGrid;
 using TMPro;
 using UnityEngine;
 
-public class BattlerUnit : Unit
+public class BattlerUnit : ColossusUnit
 {
     [SerializeField] private int hardpoints;
     public List<Weapon> weaponList;
     [HideInInspector] public Weapon selectedWeapon;
     public List<Animator> weaponAnimators;
 
-    override protected void Start()
+    override protected void Awake()
     {
-        base.Start();
+        base.Awake();
         selectedWeapon = weaponList[0];
     }
 

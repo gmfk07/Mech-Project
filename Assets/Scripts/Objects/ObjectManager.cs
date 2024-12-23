@@ -27,7 +27,6 @@ public class ObjectManager : MonoBehaviour
     Dictionary<int, City> tileCityDict = new Dictionary<int, City>();
     public Dictionary<int, CitySubObject> tileCitySubObjectDict = new Dictionary<int, CitySubObject>();
     public Dictionary<int, List<Unit>> playerUnitDict = new Dictionary<int, List<Unit>>();
-
     [HideInInspector] public Unit selectedUnit = null;
     [HideInInspector] public Weapon selectedWeapon = null;
     PaintMode paintMode = PaintMode.None;
@@ -145,9 +144,9 @@ public class ObjectManager : MonoBehaviour
             hexa.highlightEnabled = false;
             hexa.OnPathFindingCrossTile -= PathFindingCrossTileMoving;
             List<int> path = hexa.FindPath(selectedUnit.tileIndex, tileIndex, 0, -1, true);
-            path.Insert(0, selectedUnit.tileIndex);
             if (path != null)
             {
+                path.Insert(0, selectedUnit.tileIndex);
                 BattlerUnit selectedBattlerUnit = (BattlerUnit) selectedUnit;
                 int pathLength = (int) CalculatePathLength(hexa, path, false);
                 if (pathLength < selectedBattlerUnit.selectedWeapon.minRange || pathLength > selectedWeapon.maxRange)
@@ -160,6 +159,35 @@ public class ObjectManager : MonoBehaviour
                 }
                 hexa.OnPathFindingCrossTile += PathFindingCrossTileMoving;
             }
+        }
+    }
+
+    public void CreateUnitFromRecruitable(int tileIndex, Recruitable recruitable)
+    {
+        if (!tileUnitDict.ContainsKey(tileIndex) && hexa.GetTileCanCross(tileIndex))
+        {
+            Unit unit = Instantiate(recruitable.unitPrefab).GetComponent<Unit>();
+            tileUnitDict.Add(tileIndex, unit);
+            int currentPlayer = TurnManager.instance.currentPlayer;
+            unit.tileIndex = tileIndex;
+            unit.owningNation = NationManager.instance.nations[currentPlayer];
+
+            // Parent it to hexasphere, so it rotates along it
+            unit.transform.SetParent(hexa.transform);
+
+            // Position unit on top of tile
+            unit.transform.position = hexa.GetTileCenter(tileIndex);
+
+            //Add to player's dict
+            if (playerUnitDict.ContainsKey(currentPlayer))
+            {
+                playerUnitDict[currentPlayer].Add(unit);
+            }
+            else
+            {
+                playerUnitDict.Add(currentPlayer, new List<Unit>() {unit});
+            }
+            unit.active = true;
         }
     }
 
@@ -233,6 +261,7 @@ public class ObjectManager : MonoBehaviour
                 city.owningNation = NationManager.instance.nations[TurnManager.instance.currentPlayer];
                 List<City> currentCities = city.owningNation.cities;
                 currentCities.Add(city);
+                NationManager.instance.nationCityLists[TurnManager.instance.currentPlayer].Add(city);
                 city.ChangeName(NationManager.instance.nationCityNameLists[TurnManager.instance.currentPlayer][currentCities.Count - 1]);
 
                 hexa.FlyTo(tileIndex, 0.5f);
@@ -380,7 +409,8 @@ public class ObjectManager : MonoBehaviour
     {
         selectedUnit.hasActed = false;
         selectedUnit.remainingMoves = selectedUnit.moveRange;
-        selectedUnit.rp = Mathf.Max(0, selectedUnit.rp - selectedUnit.pushReactorCost);
+        ColossusUnit selectedColossusUnit = (ColossusUnit) selectedUnit;
+        selectedColossusUnit.rp = Mathf.Max(0, selectedColossusUnit.rp - selectedColossusUnit.pushReactorCost);
         UICanvas.instance.UpdateUnitPanel();
     }
 

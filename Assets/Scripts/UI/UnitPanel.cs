@@ -25,10 +25,14 @@ public class UnitPanel : MonoBehaviour
 
         if (ObjectManager.instance.selectedUnit.hasActed)
         {
-            if (ObjectManager.instance.selectedUnit.rp > 0)
+            if (ObjectManager.instance.selectedUnit is ColossusUnit)
             {
-                createdPushReactorButton = Instantiate(pushReactorButtonPrefab, transform);
-                createdPushReactorButton.GetComponent<PushReactorButton>().SetVisibility(true);
+                ColossusUnit selectedColossusUnit = (ColossusUnit) ObjectManager.instance.selectedUnit;
+                if (selectedColossusUnit.rp > 0)
+                {
+                    createdPushReactorButton = Instantiate(pushReactorButtonPrefab, transform);
+                    createdPushReactorButton.GetComponent<PushReactorButton>().SetVisibility(true);
+                }
             }
             return;
         }

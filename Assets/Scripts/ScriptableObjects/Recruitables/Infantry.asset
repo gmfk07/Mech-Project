@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02b25ef74a5fd024bad76f503a2a37fa, type: 3}
+  m_Name: Infantry
+  m_EditorClassIdentifier: 
+  recruitableName: Infantry
+  sprite: {fileID: 21300000, guid: 2a18823f133c76f47b3cebd81a357831, type: 3}
+  unitPrefab: {fileID: 862812538699581198, guid: 0e99582c3ec5059439ad6337f187fe78, type: 3}
+  costResourceList:
+  - {fileID: 11400000, guid: 376b7ab612cacf84fa4f2f2b80eba16d, type: 2}
+  - {fileID: 11400000, guid: 238fd8b3456b0cb4295bfb4134050492, type: 2}
+  costValueList: 0500000005000000

@@ -14,7 +14,8 @@ public class PushReactorButton : UIButton
 
     public void InitializeButtonText()
     {
-        buttonText.text = "Push Reactor\n-" + ObjectManager.instance.selectedUnit.pushReactorCost + "RP";
+        ColossusUnit selectedColossusUnit = (ColossusUnit) ObjectManager.instance.selectedUnit;
+        buttonText.text = "Push Reactor\n-" + selectedColossusUnit.pushReactorCost + "RP";
     }
 
     public override void OnButtonPressed()

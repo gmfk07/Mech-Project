@@ -16,7 +16,15 @@ public class UnitInfo : MonoBehaviour
         Unit selectedUnit = ObjectManager.instance.selectedUnit;
         unitName.text = selectedUnit.unitName;
         unitHp.text = "HP: " + selectedUnit.hp + "/" + selectedUnit.maxHp;
-        unitRp.text = "RP: " + selectedUnit.rp + "/" + selectedUnit.maxRp;
+        if (selectedUnit is ColossusUnit)
+        {
+            ColossusUnit selectedColossusUnit = (ColossusUnit) ObjectManager.instance.selectedUnit;
+            unitRp.text = "RP: " + selectedColossusUnit.rp + "/" + selectedColossusUnit.maxRp;
+        }
+        else
+        {
+            unitRp.text = "";
+        }
         unitMv.text = "MV: " + selectedUnit.remainingMoves + "/" + selectedUnit.moveRange;
     }
 

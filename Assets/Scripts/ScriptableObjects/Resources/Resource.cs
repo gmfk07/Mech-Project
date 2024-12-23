@@ -6,5 +6,8 @@ using UnityEngine;
 public class Resource : ScriptableObject
 {
     public string resourceName;
-    public Sprite sprite; 
+    public Sprite sprite;
+    public bool global = true;
+    public bool stockpilable = true;
 }
+

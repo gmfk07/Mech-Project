@@ -17,13 +17,10 @@ public class Unit : Object
     //Whether or not this unit has anything they can do (move or act) on this turn
     [HideInInspector] public bool active = true;
     //Whether or not this unit has taken an action (shoot or build) on this turn
-    public bool hasActed = false;
+    [HideInInspector] public bool hasActed = false;
     [HideInInspector] public int hp;
     public int maxHp;
-    [HideInInspector] public int rp;
-    public int maxRp;
     public int evasionTarget;
-    public int pushReactorCost;
     public Nation owningNation;
     protected WorldPositionButton unitButton;
     protected WorldPositionElement unitTargetText;
@@ -34,10 +31,9 @@ public class Unit : Object
     [SerializeField] float damageTime = 2;
     [SerializeField] float deathTime = 2;
 
-    protected void Awake()
+    virtual protected void Awake()
     {
         hp = maxHp;
-        rp = maxRp;
         unitAnimator = GetComponent<Animator>();
         path = new List<int>();
         RefreshActions();
@@ -45,12 +41,11 @@ public class Unit : Object
         StartCoroutine(CreateUnitText());
     }
 
-    public void RefreshActions()
+    virtual public void RefreshActions()
     {
         remainingMoves = moveRange;
         active = true;
         hasActed = false;
-        pushReactorCost = 1;
     }
 
     public bool IsMoving()

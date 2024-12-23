@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResourceList : MonoBehaviour
+public class ResourceRowList : MonoBehaviour
 {
     [HideInInspector] public List<Resource> resources = new List<Resource>();
     [HideInInspector] public List<int> resourceAmounts = new List<int>();
@@ -14,7 +14,6 @@ public class ResourceList : MonoBehaviour
         ClearResourceDisplay();
         for (int i=0; i < Mathf.Ceil((float) resources.Count / resourcesPerRow); i++)
         {
-            int idx = i*resourcesPerRow;
             GameObject resourceRowObject = Instantiate(resourceRowPrefab, transform);
             ResourceRow resourceRow = resourceRowObject.GetComponent<ResourceRow>();
             
@@ -24,10 +23,12 @@ public class ResourceList : MonoBehaviour
             {
                 count = resourcesPerRow;
             }
+            Dictionary<Resource, int> resourceAmountDict = new Dictionary<Resource, int>();
             for (int j=0; j < count; j++)
             {
-                resourceRow.resourceAmountDict.Add(resources[resourcesPerRow * i + j], resourceAmounts[resourcesPerRow * i + j]);
+                resourceAmountDict.Add(resources[resourcesPerRow * i + j], resourceAmounts[resourcesPerRow * i + j]);
             }
+            resourceRow.InitializeResources(resourceAmountDict);
         }
     }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using HexasphereGrid;
 using UnityEngine;
 
-public class BuilderUnit : Unit
+public class BuilderUnit : ColossusUnit
 {
 
     //A tile can be owned by multiple cities, but all cities owning a tile must be the same player's.

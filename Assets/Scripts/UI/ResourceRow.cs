@@ -6,10 +6,9 @@ using UnityEngine.UI;
 
 public class ResourceRow : MonoBehaviour
 {
-    [HideInInspector] public Dictionary<Resource, int> resourceAmountDict = new Dictionary<Resource, int>();
     [SerializeField] private GameObject resourceCounterPrefab;
 
-    void Start()
+    public void InitializeResources(Dictionary<Resource, int> resourceAmountDict)
     {
         foreach (Resource resource in resourceAmountDict.Keys)
         {

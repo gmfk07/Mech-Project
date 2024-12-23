@@ -19,16 +19,12 @@ public class UICanvas : MonoBehaviour
     [SerializeField] GameObject citySubObjectPopPanelPrefab;
     [SerializeField] GameObject unitButtonPrefab;
     [SerializeField] GameObject worldPositionTextPrefab;
-    [SerializeField] GameObject popIconPrefab;
-    [SerializeField] Image cityPanel;
+    [SerializeField] CityPanel cityPanel;
     [SerializeField] UnitPanel unitPanel;
-    [SerializeField] TextMeshProUGUI cityNameText;
-    [SerializeField] ResourceList resourceList;
-    [HideInInspector] City selectedCity;
+    [SerializeField] StockpileResourceList stockpileResourceList;
     [SerializeField] private Button mainButton;
     private MainButtonState mainButtonState;
     [SerializeField] private Transform worldElementParent;
-    public Transform popIconParent;
 
     void Start()
     {
@@ -48,6 +44,11 @@ public class UICanvas : MonoBehaviour
         {
             SetCityPanelVisible(false);
         }
+    }
+
+    public void HandleNewTurn()
+    {
+        UpdateStockpileResourceList();
     }
  
     //Update the main button once ObjectManager and TurnManager are initialized.
@@ -96,16 +97,16 @@ public class UICanvas : MonoBehaviour
     }
 
     public void HandleMainButtonPressed() {
+        int currentPlayer = TurnManager.instance.currentPlayer;
         if (mainButtonState == MainButtonState.NextTurn)
         {
-            ObjectManager.instance.DeselectUnit();
             TurnManager.instance.HandleNewTurn();
             UpdateMainButton();
         }
-        else if (mainButtonState == MainButtonState.NextUnit)
+        else if (mainButtonState == MainButtonState.NextUnit && ObjectManager.instance.playerUnitDict.ContainsKey(currentPlayer))
         {
             int tileSelected = -1;
-            foreach (Unit unit in ObjectManager.instance.playerUnitDict[TurnManager.instance.currentPlayer])
+            foreach (Unit unit in ObjectManager.instance.playerUnitDict[currentPlayer])
             {
                 if (tileSelected == -1 && unit.active)
                 {
@@ -156,94 +157,47 @@ public class UICanvas : MonoBehaviour
         return worldPositionText.GetComponent<WorldPositionElement>(); 
     }
 
-    public void SetSelectedCity(City selectedCity)
+    public void UpdateStockpileResourceList()
     {
-        this.selectedCity = selectedCity;
-        cityNameText.text = selectedCity.cityName;
-    }
-
-    public void SetCityPanelVisible(bool visibility)
-    {
-        cityPanel.enabled = visibility;
-        cityNameText.enabled = visibility;
-        resourceList.enabled = visibility;
-        
-        if (visibility)
+        Dictionary<Resource, int> resourceDict = NationManager.instance.nationResourceDicts[TurnManager.instance.currentPlayer];
+        List<Resource> resources = resourceDict.Keys.ToList();
+        List<int> resourceAmounts = new List<int>();
+        foreach (Resource resource in resources)
         {
-            ObjectManager.instance.selectedUnit = null;
-            resourceList.enabled = true;
-            UpdateResourceList();
-            UpdatePopDisplay();
-            ObjectManager.instance.DeselectUnit();
-
-            if (selectedCity != null)
-            {
-                foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
-                {
-                    if (citySubObject.owningCity == selectedCity)
-                    {
-                        citySubObject.SetCitySubObjectPopPanelActive(true);
-                    }
-                    else
-                    {
-                        citySubObject.SetCitySubObjectPopPanelActive(false);
-                    }
-                }
-            }
+            resourceAmounts.Add(resourceDict[resource]);
         }
-        else
-        {
-            resourceList.ClearResourceDisplay();
-            ClearPopDisplay();
-            if (selectedCity != null)
-            {
-                foreach (CitySubObject citySubObject in selectedCity.citySubObjects)
-                {
-                    citySubObject.SetCitySubObjectPopPanelActive(false);
-                }
-            }
-        }
-    }
-
-    public void UpdateResourceList()
-    {
-        List<Resource> resources = new List<Resource>();
-        List<int> amounts = new List<int>();
-        foreach (Resource resource in selectedCity.resourceProductionDict.Keys)
-        {
-            resources.Add(resource);
-            amounts.Add(selectedCity.resourceProductionDict[resource]);
-        }
-
-        resourceList.resources = resources;
-        resourceList.resourceAmounts = amounts;
-        resourceList.UpdateResourceDisplay();
-    }
-
-    public void UpdatePopDisplay()
-    {
-        ClearPopDisplay();
-        for (int i=0; i < selectedCity.GetAvailablePopCount(); i++)
-        {
-            if (selectedCity.GetPop(i).working == null)
-            {
-                GameObject created = Instantiate(popIconPrefab, popIconParent);
-                created.GetComponent<PopIcon>().popIndex = i;
-                created.GetComponent<PopIcon>().owningCity = selectedCity;
-            }
-        }
-    }
-
-    public void ClearPopDisplay()
-    {
-        foreach (Transform child in popIconParent.transform)
-        {
-            Destroy(child.gameObject);
-        }
+        stockpileResourceList.resources = resources;
+        stockpileResourceList.resourceAmounts = resourceAmounts;
+        stockpileResourceList.UpdateResourceDisplay();
     }
 
     public void UpdateUnitPanel()
     {
         unitPanel.UpdateUnitPanel();
+    }
+
+    public void SetCityPanelVisible(bool visibility)
+    {
+        cityPanel.SetCityPanelVisible(visibility);
+    }
+
+    public void SetCityPanelSelectedCity(City selectedCity)
+    {
+        cityPanel.SetSelectedCity(selectedCity);
+    }
+
+    public void UpdateCityPanelRecruiting()
+    {
+        cityPanel.UpdateCityPanelRecruiting();
+    }
+
+    public void UpdateCityResourceList()
+    {
+        cityPanel.UpdateCityResourceList();
+    }
+
+    public void ReparentTransformToCityPanel(Transform toReparent)
+    {
+        cityPanel.ReparentTransformToCityPanel(toReparent);
     }
 }

@@ -56,7 +56,7 @@ public class CitySubObject : Object
                 owningCity.resourceProductionDict.Remove(resource);
             }
         }
-        UICanvas.instance.UpdateResourceList();
+        UICanvas.instance.UpdateCityResourceList();
     }
 
     //Given a popIndex, sets this pop as working for this subobject and unavailable and updates resources
@@ -78,6 +78,6 @@ public class CitySubObject : Object
             }
         }
 
-        UICanvas.instance.UpdateResourceList();
+        UICanvas.instance.UpdateCityResourceList();
     }
 }

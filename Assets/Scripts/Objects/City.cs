@@ -15,12 +15,15 @@ public class City : Object
     [HideInInspector] public List<int> tilesWithinBorders { get; private set; } = new List<int>();
     //Contains all subobjects in borders, not just those assigned to the city. For that, check the subObjects' owner
     [HideInInspector] public List<CitySubObject> citySubObjects = new List<CitySubObject>();
-    private List<Pop> pops = new List<Pop>() { new Pop(1, 1) };
-    private List<int> availablePopIndices = new List<int> { 0 };
+    private List<Pop> pops = new List<Pop>() { new Pop(1, 1), new Pop(1, 1) };
+    private List<int> availablePopIndices = new List<int> { 0, 1 };
     private WorldPositionButton cityButton;
     [HideInInspector] public string cityName;
     [HideInInspector] public Dictionary<Resource, int> resourceProductionDict = new Dictionary<Resource, int>();
     [HideInInspector] public Nation owningNation;
+    [SerializeField] private Resource recruitmentResource;
+    public Recruitable recruiting;
+    private int savedRecruitment = 0;
 
     // Start is called before the first frame update
     new void Start()
@@ -52,6 +55,7 @@ public class City : Object
         }
     }
 
+    //Fill in borders and add any CitySubObjects within borders to citySubObject
     void PaintBorders()
     {
         foreach (Tile tile in hexa.tiles)
@@ -85,6 +89,10 @@ public class City : Object
                     hexa.SetTileMaterial(tile.index, landBorderMaterial, false);
                 }
                 tilesWithinBorders.Add(tile.index);
+                if (ObjectManager.instance.tileCitySubObjectDict.ContainsKey(tileIndex))
+                {
+                    citySubObjects.Add(ObjectManager.instance.tileCitySubObjectDict[tileIndex]);
+                }
             }
         }
         hexa.SetTileMaterial(tileIndex, landBorderMaterial, false);
@@ -94,7 +102,7 @@ public class City : Object
     {
         UICanvas.instance.SetCityPanelVisible(false);
         hexa.FlyTo(tileIndex, 0.5f);
-        UICanvas.instance.SetSelectedCity(this);
+        UICanvas.instance.SetCityPanelSelectedCity(this);
         UICanvas.instance.SetCityPanelVisible(true);
     }
 
@@ -119,6 +127,75 @@ public class City : Object
     public Pop GetPop(int index)
     {
         return pops[index];
+    }
+
+    public void ProduceResources()
+    {
+        foreach (Resource resource in resourceProductionDict.Keys)
+        {
+            if (resource.global)
+            {
+                NationManager.instance.HandleNationResourceChange(owningNation.player, resource, resourceProductionDict[resource]);
+            }
+            else
+            {
+                if (resource == recruitmentResource)
+                {
+                    savedRecruitment += resourceProductionDict[resource];
+                }
+            }
+        }
+    }
+
+    public void TryRecruit()
+    {
+        if (recruiting)
+        {
+            bool canRecruit = true;
+            for (int i=0; i < recruiting.costResourceList.Count; i++)
+            {
+                Resource resource = recruiting.costResourceList[i];
+                int cost = recruiting.costValueList[i];
+                if (!resource.global)
+                {
+                    if (resource == recruitmentResource && savedRecruitment < cost)
+                    {
+                        canRecruit = false;
+                    }
+                }
+                else if (NationManager.instance.GetNationResourceCount(TurnManager.instance.currentPlayer, resource) < cost)
+                {
+                    canRecruit = false;
+                }
+            }
+
+            if (canRecruit)
+            {
+                for (int i=0; i < recruiting.costResourceList.Count; i++)
+                {
+                    Resource resource = recruiting.costResourceList[i];
+                    int cost = recruiting.costValueList[i];
+                    if (!resource.global)
+                    {
+                        if (resource == recruitmentResource)
+                        {
+                            savedRecruitment -= cost;
+                        }
+                    }
+                    else
+                    {
+                        NationManager.instance.HandleNationResourceChange(TurnManager.instance.currentPlayer, resource, -cost);
+                    }
+                }
+                ObjectManager.instance.CreateUnitFromRecruitable(tileIndex, recruiting);
+            }
+        }
+    }
+
+    public void SetRecruiting(Recruitable recruiting)
+    {
+        this.recruiting = recruiting;
+        UICanvas.instance.UpdateCityPanelRecruiting();
     }
 }
 

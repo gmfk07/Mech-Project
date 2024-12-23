@@ -44,7 +44,7 @@ public class PopIcon : MonoBehaviour
             if (currentWorkedSubObject)
             {
                 currentWorkedSubObject.StopBeingWorked();
-                transform.SetParent(UICanvas.instance.popIconParent);
+                UICanvas.instance.ReparentTransformToCityPanel(transform);
             }
             GetComponent<RectTransform>().localPosition = Vector3.zero;
         }
